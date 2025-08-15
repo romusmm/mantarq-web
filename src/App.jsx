@@ -75,7 +75,7 @@ const CLIENT_LOGOS = [
   { name: "Grupo Ortiz (Cuenca)", url: "https://i.ibb.co/PvSHrjyC/gruporotizlogo.png" },
   { name: "Marcimex", url: "https://i.ibb.co/WvJ8pRf0/Marcimex-Logo.png" },
   { name: "Junta de Beneficencia de Guayaquil", url: "https://i.ibb.co/7JyR16qj/Junta-Guayaquil-Logo.png" },
-  { name: "Grupo Concenso", url: "https://i.ibb.co/WvQ9TdYn/Grupo-Consenso-Logo-removebg-preview.png" },
+  { name: "Grupo Concenso", url: "https://i.ibb.co/whCrK4SK/grupoconsensologofinal.png" },
   { name: "Indurama", url: "https://i.ibb.co/KxmfhzBV/Indurama-Logo.png" },
   { name: "Lotería Nacional", url: "https://i.ibb.co/XrQH1J0X/Loter-a-Nacional-Logo.png" },
   { name: "Nucleomed", url: "https://i.ibb.co/4gTcdhb7/nucleomedlogo.webp" },
