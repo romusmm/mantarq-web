@@ -45,6 +45,34 @@ const NAV_ITEMS = [
   { key: "contacto", label: "Contacto" },
 ];
 
+const META_BY_PAGE = {
+  inicio: {
+    title: "Manos a la Obra | Mantenimiento y construcción en Cuenca",
+    desc: "MANTARQ S.A.S. – Manos a la Obra. Mantenimiento empresarial y residencial, construcción y remodelación en Cuenca y Ecuador. Calidad, seguridad y profesionalismo.",
+    path: "/",
+  },
+  historia: {
+    title: "Nuestra historia | Manos a la Obra",
+    desc: "De 2014 a hoy, hitos y evolución de MANTARQ S.A.S. en mantenimiento y construcción.",
+    path: "/historia/",
+  },
+  servicios: {
+    title: "Servicios | Manos a la Obra",
+    desc: "Gypsum, eléctrico, pintura, aluminio y cubiertas metálicas. Soluciones integrales para empresas y residencias.",
+    path: "/servicios/",
+  },
+  faq: {
+    title: "Preguntas frecuentes | Manos a la Obra",
+    desc: "Respuestas claras sobre alcance, ciudades, equipo y más.",
+    path: "/faq/",
+  },
+  contacto: {
+    title: "Contacto | Manos a la Obra",
+    desc: "Solicita una cotización sin compromiso en Cuenca, Ecuador.",
+    path: "/contacto/",
+  },
+};
+
 const CURRENT_YEAR = new Date().getFullYear();
 
 const TIMELINE = [
@@ -68,14 +96,14 @@ const FAQS = [
   { q: "¿Solo realizan trabajos de mantenimiento?", a: "Si bien somos especialistas en mantenimiento, también ofrecemos servicios de construcción, remodelación y reparación." },
   { q: "¿Trabajan fuera del país?", a: "Actualmente no ofrecemos servicios fuera de Ecuador." },
   { q: "¿Tienen el equipo necesario para los trabajos?", a: "Contamos con el equipo técnico necesario y con más de 10 años de experiencia." },
-  { q: "¿En qué ciudades brindan servicios?", a: "Prestamos servicios de mantenimiento a nivel nacional." },
+  { q: "¿En qué ciudades brindan servicios?", a: "Brindamos cobertura a nivel nacional en Ecuador; coordinamos equipos y logística según el alcance de cada proyecto." },
 ];
 
 const CLIENT_LOGOS = [
   { name: "Grupo Ortiz (Cuenca)", url: "https://i.ibb.co/PvSHrjyC/gruporotizlogo.png" },
   { name: "Marcimex", url: "https://i.ibb.co/WvJ8pRf0/Marcimex-Logo.png" },
   { name: "Junta de Beneficencia de Guayaquil", url: "https://i.ibb.co/7JyR16qj/Junta-Guayaquil-Logo.png" },
-  { name: "Grupo Concenso", url: "https://i.ibb.co/whCrK4SK/grupoconsensologofinal.png" },
+  { $1https://i.ibb.co/whCrK4SK/grupoconsensologofinal.png$2 },
   { name: "Indurama", url: "https://i.ibb.co/KxmfhzBV/Indurama-Logo.png" },
   { name: "Lotería Nacional", url: "https://i.ibb.co/XrQH1J0X/Loter-a-Nacional-Logo.png" },
   { name: "Nucleomed", url: "https://i.ibb.co/4gTcdhb7/nucleomedlogo.webp" },
@@ -124,55 +152,58 @@ function useScrollTopOnRoute(pageKey) {
 
 function SEO({ page }) {
   useEffect(() => {
-    const title = {
-      inicio: `${COMPANY.brandName} – Excelencia en mantenimiento y construcción`,
-      historia: `Historia – ${COMPANY.brandName}`,
-      servicios: `Servicios – ${COMPANY.brandName}`,
-      faq: `Preguntas Frecuentes – ${COMPANY.brandName}`,
-      contacto: `Contacto – ${COMPANY.brandName}`,
-    }[page];
-    document.title = title;
-
-    const ensureMeta = (name, content) => {
-      let tag = document.querySelector(`meta[name="${name}"]`);
-      if (!tag) {
-        tag = document.createElement("meta");
-        tag.setAttribute("name", name);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute("content", content);
+    const meta = META_BY_PAGE[page] || {
+      title: "Manos a la Obra",
+      desc: "Mantenimiento y construcción con confianza en Ecuador.",
+      path: "/",
     };
 
-    ensureMeta("description", "MANTARQ S.A.S. – Manos a la Obra. Mantenimiento empresarial y residencial, construcción, remodelación y soluciones a medida en Ecuador.");
-    ensureMeta("theme-color", BRAND.primary);
+    document.documentElement.lang = "es-EC";
+    document.title = meta.title;
 
-    const ensureOg = (p, c) => {
-      let tag = document.querySelector(`meta[property="${p}"]`);
-      if (!tag) {
-        tag = document.createElement("meta");
-        tag.setAttribute("property", p);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute("content", c);
-    };
-    ensureOg("og:title", document.title);
-    ensureOg("og:description", "Excelencia en cada proyecto. Manos a la Obra.");
-    ensureOg("og:type", "website");
-    ensureOg("og:locale", "es_EC");
-    ensureOg("og:image", ICON_URL);
+    const base = (import.meta.env.BASE_URL || "/");
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const canonicalUrl = origin
+      ? new URL(meta.path.replace(/^\//, ""), new URL(base, origin)).toString()
+      : meta.path;
+    const ogImage = origin
+      ? new URL("og-image.jpg", new URL(base, origin)).toString()
+      : "/og-image.jpg";
 
-    const ensureLink = (rel, href, attrs = {}) => {
-      let link = document.querySelector(`link[rel="${rel}"]`);
-      if (!link) {
-        link = document.createElement("link");
-        link.setAttribute("rel", rel);
-        document.head.appendChild(link);
-      }
-      link.setAttribute("href", href);
-      Object.entries(attrs).forEach(([k, v]) => link.setAttribute(k, v));
+    const upsert = (query, tagName) => {
+      let el = document.head.querySelector(query);
+      if (!el) { el = document.createElement(tagName); document.head.appendChild(el); }
+      return el;
     };
-    ensureLink("icon", ICON_URL, { type: "image/png" });
-    ensureLink("apple-touch-icon", ICON_URL);
+
+    const setMeta = (selector, attrs) => {
+      const el = upsert(selector, "meta");
+      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+    };
+
+    const setLink = (rel, href) => {
+      const selector = `link[rel="${rel}"]`;
+      const el = upsert(selector, "link");
+      el.setAttribute("rel", rel);
+      el.setAttribute("href", href);
+    };
+
+    setMeta('meta[name="description"]', { name: "description", content: meta.desc });
+    setMeta('meta[name="robots"]', { name: "robots", content: "index,follow" });
+
+    setMeta('meta[property="og:type"]', { property: "og:type", content: "website" });
+    setMeta('meta[property="og:title"]', { property: "og:title", content: meta.title });
+    setMeta('meta[property="og:description"]', { property: "og:description", content: meta.desc });
+    setMeta('meta[property="og:url"]', { property: "og:url", content: canonicalUrl });
+    setMeta('meta[property="og:locale"]', { property: "og:locale", content: "es_EC" });
+    setMeta('meta[property="og:image"]', { property: "og:image", content: ogImage });
+
+    setMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
+    setMeta('meta[name="twitter:title"]', { name: "twitter:title", content: meta.title });
+    setMeta('meta[name="twitter:description"]', { name: "twitter:description", content: meta.desc });
+    setMeta('meta[name="twitter:image"]', { name: "twitter:image", content: ogImage });
+
+    setLink("canonical", canonicalUrl);
   }, [page]);
   return null;
 }
@@ -733,26 +764,15 @@ function TestSuite() {
   return null;
 }
 
-export default function App({ initialPage }) {
-  const [page, setPage] = useState(() => {
-    // 1) del prerender (servidor) o 2) del script embebido en cliente o 3) por URL
-    if (initialPage) return initialPage;
-    try {
-      const el = document.getElementById("prerender-data");
-      if (el?.textContent) {
-        const d = JSON.parse(el.textContent);
-        if (d?.initialPage) return d.initialPage;
-      }
-    } catch {}
-    const map = {
-      "/": "inicio",
-      "/historia/": "historia",
-      "/servicios/": "servicios",
-      "/faq/": "faq",
-      "/contacto/": "contacto",
-    };
-    return map[location.pathname] || "inicio";
-  });
+export default function App() {
+  const [page, setPage] = useState("inicio");
+  useDarkMode();
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--brand-primary", BRAND.primary);
+    root.style.setProperty("--brand-accent", BRAND.accent);
+  }, []);
 
   useScrollTopOnRoute(page);
 
@@ -760,6 +780,7 @@ export default function App({ initialPage }) {
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 overflow-x-hidden">
+        <SEO page={page} />
       <TestSuite />
       <SEO page={page} />
       <Navbar page={page} goTo={goTo} />
