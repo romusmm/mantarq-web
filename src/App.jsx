@@ -733,15 +733,26 @@ function TestSuite() {
   return null;
 }
 
-export default function App() {
-  const [page, setPage] = useState("inicio");
-  useDarkMode();
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.style.setProperty("--brand-primary", BRAND.primary);
-    root.style.setProperty("--brand-accent", BRAND.accent);
-  }, []);
+export default function App({ initialPage }) {
+  const [page, setPage] = useState(() => {
+    // 1) del prerender (servidor) o 2) del script embebido en cliente o 3) por URL
+    if (initialPage) return initialPage;
+    try {
+      const el = document.getElementById("prerender-data");
+      if (el?.textContent) {
+        const d = JSON.parse(el.textContent);
+        if (d?.initialPage) return d.initialPage;
+      }
+    } catch {}
+    const map = {
+      "/": "inicio",
+      "/historia/": "historia",
+      "/servicios/": "servicios",
+      "/faq/": "faq",
+      "/contacto/": "contacto",
+    };
+    return map[location.pathname] || "inicio";
+  });
 
   useScrollTopOnRoute(page);
 
