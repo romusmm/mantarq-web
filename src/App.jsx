@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Paintbrush,
   PlugZap,
@@ -12,7 +11,9 @@ import {
   MapPin,
   Facebook,
   ChevronDown,
-  Send
+  Send,
+  Menu,
+  X
 } from "lucide-react";
 
 const BRAND = {
@@ -185,30 +186,106 @@ function Reveal({ children, delay = 0 }) {
 
 function Navbar({ page, goTo }) {
   const scrolled = useStickyNav();
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth >= 768) setOpen(false); };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   return (
-    <motion.nav initial={{ y: -60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.4 }} className={`fixed inset-x-0 top-0 z-50 border-b ${scrolled ? "border-white/10 bg-neutral-950/70 backdrop-blur" : "border-transparent bg-transparent"}`}>
+    <motion.nav
+      initial={{ y: -60, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className={`fixed inset-x-0 top-0 z-50 border-b ${scrolled ? "border-white/10 bg-neutral-950/70 backdrop-blur" : "border-transparent bg-transparent"}`}
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5">
             <BrandLogo className="h-8 w-8" />
           </div>
-          <div className="leading-tight">
-            <div className="text-sm text-white/60">{COMPANY.legalName}</div>
-            <div className="font-bold tracking-tight text-white">{COMPANY.brandName}</div>
+          <div className="min-w-0 leading-tight">
+            <div className="truncate text-sm text-white/60">{COMPANY.legalName}</div>
+            <div className="truncate font-bold tracking-tight text-white">{COMPANY.brandName}</div>
           </div>
         </div>
+
+        {/* Desktop nav */}
         <div className="hidden items-center gap-2 md:flex">
           {NAV_ITEMS.map((item) => (
-            <button key={item.key} onClick={() => goTo(item.key)} className={`cursor-pointer rounded-xl px-3 py-2 text-sm transition-colors hover:text-white ${page === item.key ? "text-white" : "text-white/70"}`}>{item.label}</button>
+            <button
+              key={item.key}
+              onClick={() => goTo(item.key)}
+              className={`cursor-pointer rounded-xl px-3 py-2 text-sm transition-colors hover:text-white ${page === item.key ? "text-white" : "text-white/70"}`}
+            >
+              {item.label}
+            </button>
           ))}
-          <a href={COMPANY.facebook} target="_blank" rel="noreferrer" title="Facebook" className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10">
+          <a
+            href={COMPANY.facebook}
+            target="_blank"
+            rel="noreferrer"
+            title="Facebook"
+            className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10"
+          >
             <Facebook className="h-5 w-5" />
           </a>
           <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer">
             <Button className="border border-white/10 bg-[var(--brand-primary)] text-white hover:translate-y-[-1px]" style={{ "--brand-primary": BRAND.primary }}>Solicita tu servicio</Button>
           </a>
         </div>
+
+        {/* Mobile menu button */}
+        <button
+          className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/80 md:hidden"
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? "Cerrar menú" : "Abrir menú"}
+        >
+          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
       </div>
+
+      {/* Mobile dropdown */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="md:hidden border-t border-white/10 bg-neutral-950/95 backdrop-blur"
+          >
+            <div className="mx-auto max-w-7xl px-4 py-3">
+              <div className="flex flex-col gap-1">
+                {NAV_ITEMS.map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => { setOpen(false); goTo(item.key); }}
+                    className={`w-full cursor-pointer rounded-lg px-3 py-2 text-left text-base ${page === item.key ? "text-white" : "text-white/80"} hover:text-white`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <a
+                  href={COMPANY.facebook}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/80"
+                  title="Facebook"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer">
+                  <Button className="border border-white/10 bg-[var(--brand-primary)] text-white" style={{ "--brand-primary": BRAND.primary }}>Solicita tu servicio</Button>
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 }
@@ -237,16 +314,30 @@ function Hero({ goTo }) {
 }
 
 function LogosMarquee() {
+  const track = [...CLIENT_LOGOS, ...CLIENT_LOGOS];
   return (
     <section className="border-y border-white/10 py-8">
       <div className="mx-auto max-w-7xl px-4">
-        <Reveal><div className="mb-4 text-center text-xs uppercase tracking-widest text-white/60">Empresas que confían en nosotros</div></Reveal>
+        <Reveal>
+          <div className="mb-4 text-center text-xs uppercase tracking-widest text-white/60">Empresas que confían en nosotros</div>
+        </Reveal>
         <div className="relative overflow-hidden">
-          <div className="animate-marquee flex min-w-full items-center gap-6 whitespace-nowrap">
-            {[...CLIENT_LOGOS, ...CLIENT_LOGOS].map((item, i) => (
-              <div key={i} className="logo-item group flex h-24 min-w-[320px] items-center justify-center rounded-xl border border-white/20 bg-white/[0.04] px-10">
+          <div className="marquee-track flex items-center gap-4">
+            {track.map((item, i) => (
+              <div key={`t1-${i}`} className="logo-item group flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.04] px-6">
                 {item.url ? (
-                  <img src={item.url} alt={item.name} className="logo-img h-16 w-auto opacity-90 transition-all duration-200 group-hover:opacity-100" />
+                  <img src={item.url} alt={item.name} className="logo-img opacity-90 transition-all duration-200 group-hover:opacity-100" />
+                ) : (
+                  <span className="text-sm text-white/80">{item.name}</span>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="marquee-track flex items-center gap-4" aria-hidden="true">
+            {track.map((item, i) => (
+              <div key={`t2-${i}`} className="logo-item group flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.04] px-6">
+                {item.url ? (
+                  <img src={item.url} alt={item.name} className="logo-img opacity-90 transition-all duration-200 group-hover:opacity-100" />
                 ) : (
                   <span className="text-sm text-white/80">{item.name}</span>
                 )}
@@ -256,10 +347,17 @@ function LogosMarquee() {
         </div>
       </div>
       <style>{`
-        @keyframes marquee { 0% { transform: translateX(0);} 100% { transform: translateX(-50%);} }
-        .animate-marquee { animation: marquee 20s linear infinite; }
-        .logo-img { filter: grayscale(1) brightness(0) invert(1) drop-shadow(0 0 2px rgba(255,255,255,0.9)) drop-shadow(0 0 6px rgba(255,255,255,0.35)); }
+        .marquee-track { width: max-content; white-space: nowrap; animation: marquee 20s linear infinite; will-change: transform; }
+        .marquee-track[aria-hidden="true"] { position: absolute; inset: 0; transform: translateX(100%); }
+        @keyframes marquee { 0% { transform: translateX(0);} 100% { transform: translateX(-100%);} }
+        .logo-item { min-width: 260px; height: 5.5rem; }
+        .logo-img { height: 3rem; width: auto; object-fit: contain; filter: grayscale(1) brightness(0) invert(1) drop-shadow(0 0 2px rgba(255,255,255,0.9)) drop-shadow(0 0 6px rgba(255,255,255,0.35)); }
         .logo-item:hover .logo-img { filter: none; }
+        @media (max-width: 640px) {
+          .marquee-track { animation-duration: 8s; }
+          .logo-item { min-width: 200px; height: 5rem; }
+          .logo-img { height: 2.5rem; }
+        }
       `}</style>
     </section>
   );
@@ -592,7 +690,7 @@ export default function App() {
   const goTo = (p) => setPage(p);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 overflow-x-hidden">
       <TestSuite />
       <SEO page={page} />
       <Navbar page={page} goTo={goTo} />
