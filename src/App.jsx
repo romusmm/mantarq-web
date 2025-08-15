@@ -315,30 +315,42 @@ function Hero({ goTo }) {
 }
 
 function LogosMarquee() {
-  const track = [...CLIENT_LOGOS, ...CLIENT_LOGOS];
+  const duplicated = [...CLIENT_LOGOS, ...CLIENT_LOGOS];
   return (
     <section className="border-y border-white/10 py-8">
       <div className="mx-auto max-w-7xl px-4">
         <Reveal>
           <div className="mb-4 text-center text-xs uppercase tracking-widest text-white/60">Empresas que confían en nosotros</div>
         </Reveal>
-        <div className="relative overflow-hidden">
-          <div className="marquee-track flex items-center gap-4">
-            {track.map((item, i) => (
-              <div key={`t1-${i}`} className="logo-item group flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.04] px-6">
-                {item.url ? (
-                  <img src={item.url} alt={item.name} className="logo-img opacity-90 transition-all duration-200 group-hover:opacity-100" />
-                ) : (
-                  <span className="text-sm text-white/80">{item.name}</span>
-                )}
+
+        {/* Mobile: slider con snap, sin animación automática */}
+        <div className="sm:hidden -mx-4 px-4">
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-neutral-950 to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-neutral-950 to-transparent" />
+            <div className="no-scrollbar overflow-x-auto snap-x snap-mandatory">
+              <div className="flex gap-4 pr-4">
+                {CLIENT_LOGOS.map((item, i) => (
+                  <div key={i} className="logo-item-mobile snap-center flex min-w-[220px] items-center justify-center rounded-xl border border-white/20 bg-white/[0.04] px-6 py-4">
+                    {item.url ? (
+                      <img src={item.url} alt={item.name} className="logo-img-mobile h-12 w-auto object-contain opacity-90" />
+                    ) : (
+                      <span className="text-sm text-white/80">{item.name}</span>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-          <div className="marquee-track flex items-center gap-4" aria-hidden="true">
-            {track.map((item, i) => (
-              <div key={`t2-${i}`} className="logo-item group flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.04] px-6">
+        </div>
+
+        {/* Desktop/Tablet: marquee clásico, lento y continuo */}
+        <div className="relative hidden overflow-hidden sm:block">
+          <div className="animate-marquee flex min-w-full items-center gap-6 whitespace-nowrap">
+            {duplicated.map((item, i) => (
+              <div key={i} className="logo-item-desktop group flex h-24 min-w-[320px] items-center justify-center rounded-xl border border-white/20 bg-white/[0.04] px-10">
                 {item.url ? (
-                  <img src={item.url} alt={item.name} className="logo-img opacity-90 transition-all duration-200 group-hover:opacity-100" />
+                  <img src={item.url} alt={item.name} className="logo-img-desktop h-16 w-auto opacity-90 transition-all duration-200 group-hover:opacity-100" />
                 ) : (
                   <span className="text-sm text-white/80">{item.name}</span>
                 )}
@@ -347,18 +359,21 @@ function LogosMarquee() {
           </div>
         </div>
       </div>
+
       <style>{`
-        .marquee-track { width: max-content; white-space: nowrap; animation: marquee 20s linear infinite; will-change: transform; }
-        .marquee-track[aria-hidden="true"] { position: absolute; inset: 0; transform: translateX(100%); }
-        @keyframes marquee { 0% { transform: translateX(0);} 100% { transform: translateX(-100%);} }
-        .logo-item { min-width: 260px; height: 5.5rem; }
-        .logo-img { height: 3rem; width: auto; object-fit: contain; filter: grayscale(1) brightness(0) invert(1) drop-shadow(0 0 2px rgba(255,255,255,0.9)) drop-shadow(0 0 6px rgba(255,255,255,0.35)); }
-        .logo-item:hover .logo-img { filter: none; }
-        @media (max-width: 640px) {
-          .marquee-track { animation-duration: 8s; }
-          .logo-item { min-width: 200px; height: 5rem; }
-          .logo-img { height: 2.5rem; }
+        /* Desktop marquee continuo (duplicado, -50%) */
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { animation: marquee 20s linear infinite; will-change: transform; }
+
+        /* Contorno blanco por defecto, color al hover */
+        .logo-img-desktop, .logo-img-mobile {
+          filter: grayscale(1) brightness(0) invert(1) drop-shadow(0 0 2px rgba(255,255,255,0.9)) drop-shadow(0 0 6px rgba(255,255,255,0.35));
         }
+        .logo-item-desktop:hover .logo-img-desktop { filter: none; }
+
+        /* Ocultar scrollbar en móviles */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </section>
   );
