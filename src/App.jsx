@@ -22,16 +22,10 @@ const BRAND = {
   accent: "#FFC200",
 };
 
-const COMPANY = {
-  legalName: "MANTARQ S.A.S.",
-  brandName: "Manos a la Obra",
-  city: "Cuenca, Ecuador",
-  email: "info@mantarq.com",
-  phone: "+593 99 624 2213",
-  phoneHref: "593996242213",
-  address: "Fray Vicente Solano y Avenida del Estado. Edificio CICA, Oficina 520",
-  facebook: "https://www.facebook.com/Manosalaobra.Cuenca",
-  instagram: "https://www.instagram.com/manosalaobraecuador",
+$1,
+  mapsUrl: "https://www.google.com/maps/place/Manos+a+la+Obra+MANTARQ+SAS/@-2.9060613,-79.0094591,17z/data=!3m1!4b1!4m6!3m5!1s0x91cd19006167e407:0x8c14fa3327f3b7d!8m2!3d-2.9060613!4d-79.0068842!16s%2Fg%2F11vyj3pb6c?entry=ttu&g_ep=EgoyMDI1MDgxMy4wIKXMDSoASAFQAw%3D%3D",
+  mapsLat: -2.9060613,
+  mapsLng: -79.0068842,
 };
 
 const NAV_ITEMS = [
@@ -65,14 +59,14 @@ const FAQS = [
   { q: "¿Solo realizan trabajos de mantenimiento?", a: "Si bien somos especialistas en mantenimiento, también ofrecemos servicios de construcción, remodelación y reparación." },
   { q: "¿Trabajan fuera del país?", a: "Actualmente no ofrecemos servicios fuera de Ecuador." },
   { q: "¿Tienen el equipo necesario para los trabajos?", a: "Contamos con el equipo técnico necesario y con más de 10 años de experiencia." },
-  { q: "¿En qué ciudades brindan servicios?", a: "Prestamos nuestros servicios dentro de todo el Ecuador." },
+  { q: "¿En qué ciudades brindan servicios?", a: "Prestamos servicios de mantenimiento a nivel nacional." },
 ];
 
 const CLIENT_LOGOS = [
   { name: "Grupo Ortiz (Cuenca)", url: "https://i.ibb.co/PvSHrjyC/gruporotizlogo.png" },
   { name: "Marcimex", url: "https://i.ibb.co/WvJ8pRf0/Marcimex-Logo.png" },
   { name: "Junta de Beneficencia de Guayaquil", url: "https://i.ibb.co/7JyR16qj/Junta-Guayaquil-Logo.png" },
-  { name: "Grupo Concenso", url: "https://i.ibb.co/whCrK4SK/grupoconsensologofinal.png" },
+  { name: "Grupo Concenso", url: "https://i.ibb.co/WvQ9TdYn/Grupo-Consenso-Logo-removebg-preview.png" },
   { name: "Indurama", url: "https://i.ibb.co/KxmfhzBV/Indurama-Logo.png" },
   { name: "Lotería Nacional", url: "https://i.ibb.co/XrQH1J0X/Loter-a-Nacional-Logo.png" },
   { name: "Nucleomed", url: "https://i.ibb.co/4gTcdhb7/nucleomedlogo.webp" },
@@ -104,6 +98,19 @@ function useStickyNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   return scrolled;
+}
+
+function useScrollTopOnRoute(pageKey) {
+  useEffect(() => {
+    try { if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual"; } catch {}
+    const scrollNow = () => window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    scrollNow();
+    const t0 = setTimeout(scrollNow, 0);
+    const t1 = setTimeout(scrollNow, 100);
+    const r0 = requestAnimationFrame(scrollNow);
+    const r1 = requestAnimationFrame(() => setTimeout(scrollNow, 16));
+    return () => { clearTimeout(t0); clearTimeout(t1); cancelAnimationFrame(r0); cancelAnimationFrame(r1); };
+  }, [pageKey]);
 }
 
 function SEO({ page }) {
@@ -404,7 +411,7 @@ function QuickContact() {
         </Card>
         <Card>
           <div className="flex items-center gap-3 text-neutral-900"><MapPin className="h-5 w-5 text-neutral-700" /><div className="text-sm font-semibold">Ubicación</div></div>
-          <div className="mt-2 text-neutral-700">{COMPANY.address}</div>
+          <a href={COMPANY.mapsUrl} target="_blank" rel="noreferrer" className="mt-2 block text-neutral-700 hover:text-neutral-900">{COMPANY.address}</a>
         </Card>
         <Card>
           <div className="flex items-center gap-3 text-neutral-900"><Facebook className="h-5 w-5 text-neutral-700" /><div className="text-sm font-semibold">Facebook</div></div>
@@ -475,7 +482,7 @@ function Footer({ goTo }) {
           <ul className="space-y-2 text-neutral-700">
             <li><a href={`mailto:${COMPANY.email}`} className="hover:text-neutral-900">{COMPANY.email}</a></li>
             <li><a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer" className="hover:text-neutral-900">{COMPANY.phone}</a></li>
-            <li>{COMPANY.address}</li>
+            <li><a href={COMPANY.mapsUrl} target="_blank" rel="noreferrer" className="hover:text-neutral-900">{COMPANY.address}</a></li>
           </ul>
         </div>
       </div>
@@ -609,7 +616,7 @@ ${message}`)}`;
     }
   }
 
-  const mapQuery = encodeURIComponent(`${COMPANY.address}, ${COMPANY.city}`);
+  const embedSrc = `https://www.google.com/maps?ll=${COMPANY.mapsLat},${COMPANY.mapsLng}&q=${COMPANY.mapsLat},${COMPANY.mapsLng}&z=17&t=m&output=embed`;
 
   return (
     <main className="pt-28" id="contacto">
@@ -651,9 +658,9 @@ ${message}`)}`;
           <Card>
             <div className="flex items-start gap-3 text-neutral-800"><Mail className="mt-0.5 h-5 w-5" /> <a className="hover:text-neutral-900" href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a></div>
             <div className="mt-2 flex items-start gap-3 text-neutral-800"><Phone className="mt-0.5 h-5 w-5" /> <a className="hover:text-neutral-900" href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer">{COMPANY.phone}</a></div>
-            <div className="mt-2 flex items-start gap-3 text-neutral-800"><MapPin className="mt-0.5 h-5 w-5" /> <span>{COMPANY.address}</span></div>
+            <div className="mt-2 flex items-start gap-3 text-neutral-800"><MapPin className="mt-0.5 h-5 w-5" /> <a href={COMPANY.mapsUrl} target="_blank" rel="noreferrer" className="hover:text-neutral-900">{COMPANY.address}</a></div>
           </Card>
-          <div className="overflow-hidden rounded-2xl border border-neutral-200"><iframe title="Mapa Manos a la Obra" src={`https://www.google.com/maps?q=${mapQuery}&output=embed`} loading="lazy" className="h-72 w-full" /></div>
+          <div className="overflow-hidden rounded-2xl border border-neutral-200"><iframe title="Mapa Manos a la Obra" src={embedSrc} loading="lazy" className="h-72 w-full" /></div>
         </div>
       </section>
     </main>
@@ -727,9 +734,7 @@ export default function App() {
     root.style.setProperty("--brand-accent", BRAND.accent);
   }, []);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [page]);
+  useScrollTopOnRoute(page);
 
   const goTo = (p) => setPage(p);
 
@@ -738,7 +743,7 @@ export default function App() {
       <TestSuite />
       <SEO page={page} />
       <Navbar page={page} goTo={goTo} />
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' })}>
         {page === "inicio" && (<motion.div key="inicio" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><InicioPage goTo={goTo} /></motion.div>)}
         {page === "historia" && (<motion.div key="historia" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><HistoriaPage /></motion.div>)}
         {page === "servicios" && (<motion.div key="servicios" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ServiciosPage goTo={goTo} /></motion.div>)}
