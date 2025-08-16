@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { onCLS, onINP, onLCP } from "web-vitals";
 import {
   Paintbrush,
   PlugZap,
@@ -228,6 +229,13 @@ function SEO({ page, title, description }) {
     } catch {}
   }, [page]);
 
+  const faviconSvg = homeHref ? new URL('favicon.svg', homeHref).href : undefined;
+  const favicon32 = homeHref ? new URL('favicon-32x32.png', homeHref).href : undefined;
+  const favicon16 = homeHref ? new URL('favicon-16x16.png', homeHref).href : undefined;
+  const appleIcon  = homeHref ? new URL('apple-touch-icon.png', homeHref).href : undefined;
+  const manifestUrl = homeHref ? new URL('site.webmanifest', homeHref).href : undefined;
+  const fallbackFavicon = "https://i.ibb.co/VYKcrNBR/mantarqlogopng.png";
+
   const ldLocal = buildLocalBusinessSchema(COMPANY, canonicalHref);
   const ldBreadcrumb = buildBreadcrumbSchema(page, canonicalHref, homeHref);
   const ldFAQ = page === "faq" ? buildFAQSchema(FAQS) : null;
@@ -236,6 +244,13 @@ function SEO({ page, title, description }) {
     <>
       {description && <meta name="description" content={description} />}
       {canonicalHref && <link rel="canonical" href={canonicalHref} />}
+      {faviconSvg && <link rel="icon" type="image/svg+xml" href={faviconSvg} />}
+      {favicon32 && <link rel="icon" type="image/png" sizes="32x32" href={favicon32} />}
+      {favicon16 && <link rel="icon" type="image/png" sizes="16x16" href={favicon16} />}
+      {appleIcon && <link rel="apple-touch-icon" href={appleIcon} />}
+      {manifestUrl && <link rel="manifest" href={manifestUrl} />}
+      <link rel="icon" href={fallbackFavicon} />
+      <meta name="theme-color" content={BRAND.primary} />
       {title && <meta property="og:title" content={title} />}
       {description && <meta property="og:description" content={description} />}
       {canonicalHref && <meta property="og:url" content={canonicalHref} />}
@@ -470,7 +485,17 @@ function LogosMarquee() {
         </div>
       </div>
 
-      <style>{`$1`}</style></section>
+      <style>{`
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { animation: marquee var(--marquee-duration,28s) linear infinite; will-change: transform; }
+        .logo-img-desktop, .logo-img-mobile { filter: grayscale(1) contrast(1) brightness(0.6) drop-shadow(0 0 1px rgba(0,0,0,0.18)); transform: translateZ(0); transition: filter .2s ease, opacity .2s ease; }
+        .logo-item-desktop:hover .logo-img-desktop { filter: none; }
+        @media (max-width: 640px) { :root { --marquee-duration: 40s; } .logo-img-mobile { filter: grayscale(1) brightness(0.65); } }
+        @media (prefers-reduced-motion: reduce) { .animate-marquee { animation-duration: 56s; } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 1000px; }
+      `}</style></section>
   );
 }
 
@@ -801,7 +826,7 @@ function TestSuite() {
   return null;
 }
 
-export default function App($1) {
+export default function App({ initialPage } = {}) {
   useEffect(() => {
     try {
       const log = (m) => console.log('[CWV]', m.name, Math.round(m.value), m);
