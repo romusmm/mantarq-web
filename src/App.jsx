@@ -801,7 +801,15 @@ function TestSuite() {
   return null;
 }
 
-export default function App({ initialPage }) {
+export default function App($1) {
+  useEffect(() => {
+    try {
+      const log = (m) => console.log('[CWV]', m.name, Math.round(m.value), m);
+      onLCP(log);
+      onINP(log, { reportAllChanges: true });
+      onCLS(log, { reportAllChanges: true });
+    } catch {}
+  }, []);
   const [page, setPage] = useState(() => {
     if (initialPage) return initialPage;
     try {
