@@ -17,16 +17,27 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # En Project Pages (actual): base del repo
+      VITE_BASE: "/mantarq-web/"
+      # Si luego compras dominio, define CUSTOM_DOMAIN: "www.mantarq.com"
+      CUSTOM_DOMAIN: ""
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
       - run: npm ci
       - run: npm run build
-      # SPA fallback para rutas internas
+
+      # 👉 Generar sitemap y robots automáticamente
+      - name: Generate sitemap & robots
+        run: node scripts/generate-sitemap.mjs
+
+      # SPA fallback
       - run: cp dist/index.html dist/404.html
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
