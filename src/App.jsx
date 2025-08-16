@@ -844,7 +844,7 @@ export default function App({ initialPage }) {
   useEffect(() => {
     (async () => {
       try {
-        const mod = await import("web-vitals/attribution");
+        const mod = await import("web-vitals");
         const send = (metric) => {
           try {
             const id = import.meta?.env?.VITE_GA_ID;
