@@ -103,7 +103,7 @@ const CLIENT_LOGOS = [
   { name: "Grupo Ortiz (Cuenca)", url: "https://i.ibb.co/PvSHrjyC/gruporotizlogo.png" },
   { name: "Marcimex", url: "https://i.ibb.co/WvJ8pRf0/Marcimex-Logo.png" },
   { name: "Junta de Beneficencia de Guayaquil", url: "https://i.ibb.co/7JyR16qj/Junta-Guayaquil-Logo.png" },
-  { $1https://i.ibb.co/whCrK4SK/grupoconsensologofinal.png$2 },
+  { name: "Grupo Consenso", url: "https://i.ibb.co/whCrK4SK/grupoconsensologofinal.png" },
   { name: "Indurama", url: "https://i.ibb.co/KxmfhzBV/Indurama-Logo.png" },
   { name: "Lotería Nacional", url: "https://i.ibb.co/XrQH1J0X/Loter-a-Nacional-Logo.png" },
   { name: "Nucleomed", url: "https://i.ibb.co/4gTcdhb7/nucleomedlogo.webp" },
@@ -150,62 +150,107 @@ function useScrollTopOnRoute(pageKey) {
   }, [pageKey]);
 }
 
-function SEO({ page }) {
+function buildLocalBusinessSchema(c, canonical) {
+  const parts = (c.city || "").split(",").map((s) => s.trim());
+  const locality = parts[0] || "Cuenca";
+  const region = parts[1] || "Azuay";
+  return {
+    "@context": "https://schema.org",
+    "@type": "HomeAndConstructionBusiness",
+    name: c.brandName,
+    legalName: c.legalName,
+    url: canonical || "",
+    telephone: c.phoneHref ? "+" + c.phoneHref : c.phone,
+    email: c.email,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: c.address,
+      addressLocality: locality,
+      addressRegion: region,
+      addressCountry: "EC",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: c.mapsLat,
+      longitude: c.mapsLng,
+    },
+    sameAs: [c.facebook, c.instagram].filter(Boolean),
+    areaServed: "Ecuador",
+  };
+}
+
+function buildBreadcrumbSchema(page, canonical, home) {
+  const names = {
+    inicio: "Inicio",
+    historia: "Historia",
+    servicios: "Servicios",
+    faq: "Preguntas frecuentes",
+    contacto: "Contacto",
+  };
+  if (page === "inicio") return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: home || canonical },
+      { "@type": "ListItem", position: 2, name: names[page] || page, item: canonical },
+    ],
+  };
+}
+
+function buildFAQSchema(faqs) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+}
+
+function SEO({ page, title, description }) {
+  useEffect(() => { if (title) document.title = title; }, [title]);
+  const base = (import.meta?.env?.BASE_URL || "/").replace(/\/+$/, "/");
+  const map = { inicio: "/", historia: "/historia/", servicios: "/servicios/", faq: "/faq/", contacto: "/contacto/" };
+  const path = map[page] || "/";
+  const [canonicalHref, setCanonicalHref] = useState("");
+  const [homeHref, setHomeHref] = useState("");
   useEffect(() => {
-    const meta = META_BY_PAGE[page] || {
-      title: "Manos a la Obra",
-      desc: "Mantenimiento y construcción con confianza en Ecuador.",
-      path: "/",
-    };
-
-    document.documentElement.lang = "es-EC";
-    document.title = meta.title;
-
-    const base = (import.meta.env.BASE_URL || "/");
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const canonicalUrl = origin
-      ? new URL(meta.path.replace(/^\//, ""), new URL(base, origin)).toString()
-      : meta.path;
-    const ogImage = origin
-      ? new URL("og-image.jpg", new URL(base, origin)).toString()
-      : "/og-image.jpg";
-
-    const upsert = (query, tagName) => {
-      let el = document.head.querySelector(query);
-      if (!el) { el = document.createElement(tagName); document.head.appendChild(el); }
-      return el;
-    };
-
-    const setMeta = (selector, attrs) => {
-      const el = upsert(selector, "meta");
-      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
-    };
-
-    const setLink = (rel, href) => {
-      const selector = `link[rel="${rel}"]`;
-      const el = upsert(selector, "link");
-      el.setAttribute("rel", rel);
-      el.setAttribute("href", href);
-    };
-
-    setMeta('meta[name="description"]', { name: "description", content: meta.desc });
-    setMeta('meta[name="robots"]', { name: "robots", content: "index,follow" });
-
-    setMeta('meta[property="og:type"]', { property: "og:type", content: "website" });
-    setMeta('meta[property="og:title"]', { property: "og:title", content: meta.title });
-    setMeta('meta[property="og:description"]', { property: "og:description", content: meta.desc });
-    setMeta('meta[property="og:url"]', { property: "og:url", content: canonicalUrl });
-    setMeta('meta[property="og:locale"]', { property: "og:locale", content: "es_EC" });
-    setMeta('meta[property="og:image"]', { property: "og:image", content: ogImage });
-
-    setMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
-    setMeta('meta[name="twitter:title"]', { name: "twitter:title", content: meta.title });
-    setMeta('meta[name="twitter:description"]', { name: "twitter:description", content: meta.desc });
-    setMeta('meta[name="twitter:image"]', { name: "twitter:image", content: ogImage });
-
-    setLink("canonical", canonicalUrl);
+    try {
+      if (typeof window !== "undefined") {
+        const origin = window.location.origin;
+        const mk = (p) => new URL((base + p).replace(/\/+/g, "/"), origin).href;
+        setCanonicalHref(mk(path));
+        setHomeHref(mk("/"));
+      }
+    } catch {}
   }, [page]);
-  return null;
+
+  const ldLocal = buildLocalBusinessSchema(COMPANY, canonicalHref);
+  const ldBreadcrumb = buildBreadcrumbSchema(page, canonicalHref, homeHref);
+  const ldFAQ = page === "faq" ? buildFAQSchema(FAQS) : null;
+
+  return (
+    <>
+      {description && <meta name="description" content={description} />}
+      {canonicalHref && <link rel="canonical" href={canonicalHref} />}
+      {title && <meta property="og:title" content={title} />}
+      {description && <meta property="og:description" content={description} />}
+      {canonicalHref && <meta property="og:url" content={canonicalHref} />}
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary_large_image" />
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldLocal) }} />
+      {ldBreadcrumb && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldBreadcrumb) }} />
+      )}
+      {ldFAQ && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldFAQ) }} />
+      )}
+    </>
+  );
 }
 
 function BrandLogo({ className }) {
@@ -780,19 +825,28 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 overflow-x-hidden">
-        <SEO page={page} />
-      <TestSuite />
-      <SEO page={page} />
+      {(() => { try { document.documentElement.setAttribute('lang', 'es-EC'); } catch {} })()}
+      {(() => { const root=document.documentElement; root.style.setProperty('--brand-primary', BRAND.primary); root.style.setProperty('--brand-accent', BRAND.accent); })()}
+      <SEO page={page} title={(META_BY_PAGE[page]||META_BY_PAGE.inicio).title} description={(META_BY_PAGE[page]||META_BY_PAGE.inicio).desc} />
       <Navbar page={page} goTo={goTo} />
       <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' })}>
-        {page === "inicio" && (<motion.div key="inicio" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><InicioPage goTo={goTo} /></motion.div>)}
-        {page === "historia" && (<motion.div key="historia" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><HistoriaPage /></motion.div>)}
-        {page === "servicios" && (<motion.div key="servicios" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ServiciosPage goTo={goTo} /></motion.div>)}
-        {page === "faq" && (<motion.div key="faq" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><FAQPage goTo={goTo} /></motion.div>)}
-        {page === "contacto" && (<motion.div key="contacto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ContactoPage /></motion.div>)}
+        <motion.div
+          key={page}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.25 }}
+        >
+          {page === 'inicio' && <InicioPage goTo={goTo} />}
+          {page === 'historia' && <HistoriaPage />}
+          {page === 'servicios' && <ServiciosPage goTo={goTo} />}
+          {page === 'faq' && <FAQPage goTo={goTo} />}
+          {page === 'contacto' && <ContactoPage />}
+        </motion.div>
       </AnimatePresence>
       <Footer goTo={goTo} />
       <ContactFloating />
+      <TestSuite />
     </div>
   );
 }
