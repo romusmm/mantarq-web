@@ -427,7 +427,7 @@ function Hero({ goTo }) {
 function LogosMarquee() {
   const duplicated = [...CLIENT_LOGOS, ...CLIENT_LOGOS];
   return (
-    <section className="border-y border-neutral-200 py-8">
+    <section className="cv-auto border-y border-neutral-200 py-8">
       <div className="mx-auto max-w-7xl px-4">
         <Reveal>
           <div className="mb-4 text-center text-xs uppercase tracking-widest text-neutral-600">EMPRESAS QUE CONFÍAN EN NUESTRO TRABAJO</div>
@@ -443,7 +443,7 @@ function LogosMarquee() {
                 {CLIENT_LOGOS.map((item, i) => (
                   <div key={i} className="logo-item-mobile snap-center flex min-w-[220px] items-center justify-center rounded-xl border border-neutral-200 bg-white px-6 py-4">
                     {item.url ? (
-                      <img src={item.url} alt={item.name} className="logo-img-mobile h-12 w-auto object-contain opacity-90" />
+                      <img src={item.url} alt={item.name} className="logo-img-mobile h-12 w-auto object-contain opacity-90" loading="lazy" decoding="async" width="220" height="48" />
                     ) : (
                       <span className="text-sm text-neutral-700">{item.name}</span>
                     )}
@@ -460,7 +460,7 @@ function LogosMarquee() {
             {duplicated.map((item, i) => (
               <div key={i} className="logo-item-desktop group flex h-24 min-w-[320px] items-center justify-center rounded-xl border border-neutral-200 bg-white px-10">
                 {item.url ? (
-                  <img src={item.url} alt={item.name} className="logo-img-desktop h-16 w-auto opacity-90 transition-all duration-200 group-hover:opacity-100" />
+                  <img src={item.url} alt={item.name} className="logo-img-desktop h-16 w-auto opacity-90 transition-all duration-200 group-hover:opacity-100" loading="lazy" decoding="async" width="320" height="64" />
                 ) : (
                   <span className="text-sm text-neutral-700">{item.name}</span>
                 )}
@@ -470,21 +470,13 @@ function LogosMarquee() {
         </div>
       </div>
 
-      <style>{`
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .animate-marquee { animation: marquee 20s linear infinite; will-change: transform; }
-        .logo-img-desktop, .logo-img-mobile { filter: grayscale(1) contrast(1) brightness(0.5) drop-shadow(0 0 1px rgba(0,0,0,0.25)) drop-shadow(0 0 6px rgba(0,0,0,0.08)); }
-        .logo-item-desktop:hover .logo-img-desktop { filter: none; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </section>
+      <style>{`$1`}</style></section>
   );
 }
 
 function QuickContact() {
   return (
-    <section className="py-16">
+    <section className="cv-auto py-16">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-4">
         <Card>
           <div className="flex items-center gap-3 text-neutral-900"><Mail className="h-5 w-5 text-neutral-700" /><div className="text-sm font-semibold">Correo</div></div>
@@ -591,7 +583,7 @@ function HistoriaPage() {
         <Reveal><h2 className="text-3xl font-bold text-neutral-900">Nuestra historia</h2></Reveal>
         <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Cada hito refleja nuestro compromiso con la excelencia y la confianza de nuestros clientes en Ecuador.</p></Reveal>
       </section>
-      <section className="mx-auto max-w-5xl px-4 py-12">
+      <section className="cv-auto mx-auto max-w-5xl px-4 py-12">
         <div className="relative">
           <div className="absolute left-4 top-0 bottom-0 hidden w-px bg-neutral-200 sm:block" />
           <div className="space-y-4">
@@ -628,7 +620,7 @@ function ServiciosPage({ goTo }) {
         <Reveal><h2 className="text-3xl font-bold text-neutral-900">Servicios</h2></Reveal>
         <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Soluciones integrales para empresas, comercios y residencias, con estándares de calidad y seguridad.</p></Reveal>
       </section>
-      <section className="mx-auto max-w-6xl px-4 py-10">
+      <section className="cv-auto mx-auto max-w-6xl px-4 py-10">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((s, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.35 }} className="group h-full rounded-2xl border border-neutral-200 bg-white p-6 transition-all hover:translate-y-[-2px] hover:shadow-xl">
@@ -710,7 +702,7 @@ ${message}`)}`;
         <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Cuéntanos sobre tu proyecto. Te responderemos a la brevedad.</p></Reveal>
       </section>
 
-      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-10 md:grid-cols-2">
+      <section className="cv-auto mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-10 md:grid-cols-2">
         <Card>
           <form onSubmit={handleSubmit} ref={formRef} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -809,27 +801,101 @@ function TestSuite() {
   return null;
 }
 
-export default function App() {
-  const [page, setPage] = useState("inicio");
+export default function App({ initialPage }) {
+  const [page, setPage] = useState(() => {
+    if (initialPage) return initialPage;
+    try {
+      const el = document.getElementById("prerender-data");
+      if (el?.textContent) {
+        const d = JSON.parse(el.textContent);
+        if (d?.initialPage) return d.initialPage;
+      }
+    } catch {}
+    const map = { "/": "inicio", "/historia/": "historia", "/servicios/": "servicios", "/faq/": "faq", "/contacto/": "contacto" };
+    return map[location.pathname] || "inicio";
+  });
+
   useDarkMode();
 
   useEffect(() => {
+    try { document.documentElement.setAttribute("lang", "es-EC"); } catch {}
     const root = document.documentElement;
     root.style.setProperty("--brand-primary", BRAND.primary);
     root.style.setProperty("--brand-accent", BRAND.accent);
   }, []);
 
+  // Inyectar GA4 si se define VITE_GA_ID
+  useEffect(() => {
+    const id = import.meta?.env?.VITE_GA_ID;
+    if (!id) return;
+    if (!window.__gaInit) {
+      const s1 = document.createElement("script");
+      s1.async = true;
+      s1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
+      document.head.appendChild(s1);
+      const s2 = document.createElement("script");
+      s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config','${id}');`;
+      document.head.appendChild(s2);
+      window.__gaInit = true;
+    }
+  }, []);
+
+  // Enviar Core Web Vitals a GA4 y (opcional) a un endpoint propio
+  useEffect(() => {
+    (async () => {
+      try {
+        const mod = await import("web-vitals/attribution");
+        const send = (metric) => {
+          try {
+            const id = import.meta?.env?.VITE_GA_ID;
+            const val = metric.name === "CLS" ? Math.round(metric.value * 1000) : Math.round(metric.value);
+            if (window.gtag && id) {
+              window.gtag("event", metric.name, {
+                value: val,
+                metric_id: metric.id,
+                metric_value: metric.value,
+                metric_delta: metric.delta,
+                event_category: "Web Vitals",
+                event_label: metric.id,
+                non_interaction: true,
+              });
+            }
+            const endpoint = import.meta?.env?.VITE_VITALS_URL;
+            if (endpoint) {
+              fetch(endpoint, {
+                method: "POST",
+                keepalive: true,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: metric.name,
+                  value: metric.value,
+                  delta: metric.delta,
+                  id: metric.id,
+                  page,
+                  url: location.href,
+                  ts: Date.now(),
+                }),
+              });
+            }
+          } catch {}
+        };
+        mod.onLCP(send);
+        mod.onINP(send);
+        mod.onCLS(send);
+      } catch {}
+    })();
+  }, [page]);
+
+  const goTo = (key) => setPage(key);
   useScrollTopOnRoute(page);
 
-  const goTo = (p) => setPage(p);
+  const meta = META_BY_PAGE[page] || META_BY_PAGE.inicio;
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 overflow-x-hidden">
-      {(() => { try { document.documentElement.setAttribute('lang', 'es-EC'); } catch {} })()}
-      {(() => { const root=document.documentElement; root.style.setProperty('--brand-primary', BRAND.primary); root.style.setProperty('--brand-accent', BRAND.accent); })()}
-      <SEO page={page} title={(META_BY_PAGE[page]||META_BY_PAGE.inicio).title} description={(META_BY_PAGE[page]||META_BY_PAGE.inicio).desc} />
+      <SEO page={page} title={meta.title} description={meta.desc} />
       <Navbar page={page} goTo={goTo} />
-      <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' })}>
+      <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo({ top: 0, left: 0, behavior: "auto" })}>
         <motion.div
           key={page}
           initial={{ opacity: 0, y: 8 }}
@@ -837,11 +903,11 @@ export default function App() {
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.25 }}
         >
-          {page === 'inicio' && <InicioPage goTo={goTo} />}
-          {page === 'historia' && <HistoriaPage />}
-          {page === 'servicios' && <ServiciosPage goTo={goTo} />}
-          {page === 'faq' && <FAQPage goTo={goTo} />}
-          {page === 'contacto' && <ContactoPage />}
+          {page === "inicio" && <InicioPage goTo={goTo} />}
+          {page === "historia" && <HistoriaPage />}
+          {page === "servicios" && <ServiciosPage goTo={goTo} />}
+          {page === "faq" && <FAQPage goTo={goTo} />}
+          {page === "contacto" && <ContactoPage />}
         </motion.div>
       </AnimatePresence>
       <Footer goTo={goTo} />
