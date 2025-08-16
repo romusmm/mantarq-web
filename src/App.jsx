@@ -237,6 +237,18 @@ function SEO({ page, title, description }) {
   const fallbackFavicon = "https://i.ibb.co/VYKcrNBR/mantarqlogopng.png";
 
   const ldLocal = buildLocalBusinessSchema(COMPANY, canonicalHref);
+
+  useEffect(() => {
+    try {
+      const head = document.head;
+      head.querySelectorAll('link[rel="icon"]').forEach((lnk) => {
+        const href = lnk.getAttribute('href') || '';
+        if (/vite\.svg/i.test(href)) lnk.remove();
+      });
+      const upsert = (matchSelector, attrs) => {
+        let el = head.querySelector(matchSelector);
+        if (!el) { el = document.createElement('link'); head.appendChild(el); }
+        Object.entries(a
   const ldBreadcrumb = buildBreadcrumbSchema(page, canonicalHref, homeHref);
   const ldFAQ = page === "faq" ? buildFAQSchema(FAQS) : null;
 
@@ -798,154 +810,3 @@ function ServiciosCTA({ goTo }) {
     <section className="py-16">
       <div className="mx-auto max-w-6xl px-4">
         <div className="rounded-2xl border border-neutral-200 bg-gradient-to-r from-neutral-50 to-white p-8 text-center">
-          <Reveal><h3 className="text-xl font-bold text-neutral-900">Conoce nuestros servicios</h3></Reveal>
-          <Reveal delay={0.05}><p className="mt-2 text-neutral-700">Descubre cómo podemos ayudarte con soluciones integrales y confiables.</p></Reveal>
-          <div className="mt-5"><Button onClick={() => goTo("servicios")} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Ver servicios</Button></div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ContactFloating() {
-  return (
-    <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer" className="fixed bottom-5 right-5 z-50 grid h-14 w-14 place-items-center rounded-full shadow-lg transition-transform hover:translate-y-[-2px]" style={{ background: BRAND.accent }} aria-label="Abrir contacto">
-      <Phone className="h-7 w-7" />
-    </a>
-  );
-}
-
-function TestSuite() {
-  useEffect(() => {
-    console.assert(Array.isArray(FAQS) && FAQS.length >= 3, "FAQS debe ser un arreglo con elementos");
-    console.assert(FAQS.every((f) => typeof f.q === "string" && typeof f.a === "string"), "FAQS con forma inválida");
-    console.assert(TIMELINE[TIMELINE.length - 1].year === String(CURRENT_YEAR), "El último año del timeline debe ser el año actual");
-    console.assert(SERVICES.length >= 5, "Se esperan al menos 6 servicios");
-    console.assert(CLIENT_LOGOS.length >= 8, "Se esperan 8 logos de clientes");
-  }, []);
-  return null;
-}
-
-export default function App({ initialPage } = {}) {
-  useEffect(() => {
-    try {
-      const log = (m) => console.log('[CWV]', m.name, Math.round(m.value), m);
-      onLCP(log);
-      onINP(log, { reportAllChanges: true });
-      onCLS(log, { reportAllChanges: true });
-    } catch {}
-  }, []);
-  const [page, setPage] = useState(() => {
-    if (initialPage) return initialPage;
-    try {
-      const el = document.getElementById("prerender-data");
-      if (el?.textContent) {
-        const d = JSON.parse(el.textContent);
-        if (d?.initialPage) return d.initialPage;
-      }
-    } catch {}
-    const map = { "/": "inicio", "/historia/": "historia", "/servicios/": "servicios", "/faq/": "faq", "/contacto/": "contacto" };
-    return map[location.pathname] || "inicio";
-  });
-
-  useDarkMode();
-
-  useEffect(() => {
-    try { document.documentElement.setAttribute("lang", "es-EC"); } catch {}
-    const root = document.documentElement;
-    root.style.setProperty("--brand-primary", BRAND.primary);
-    root.style.setProperty("--brand-accent", BRAND.accent);
-  }, []);
-
-  // Inyectar GA4 si se define VITE_GA_ID
-  useEffect(() => {
-    const id = import.meta?.env?.VITE_GA_ID;
-    if (!id) return;
-    if (!window.__gaInit) {
-      const s1 = document.createElement("script");
-      s1.async = true;
-      s1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
-      document.head.appendChild(s1);
-      const s2 = document.createElement("script");
-      s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config','${id}');`;
-      document.head.appendChild(s2);
-      window.__gaInit = true;
-    }
-  }, []);
-
-  // Enviar Core Web Vitals a GA4 y (opcional) a un endpoint propio
-  useEffect(() => {
-    (async () => {
-      try {
-        const mod = await import("web-vitals");
-        const send = (metric) => {
-          try {
-            const id = import.meta?.env?.VITE_GA_ID;
-            const val = metric.name === "CLS" ? Math.round(metric.value * 1000) : Math.round(metric.value);
-            if (window.gtag && id) {
-              window.gtag("event", metric.name, {
-                value: val,
-                metric_id: metric.id,
-                metric_value: metric.value,
-                metric_delta: metric.delta,
-                event_category: "Web Vitals",
-                event_label: metric.id,
-                non_interaction: true,
-              });
-            }
-            const endpoint = import.meta?.env?.VITE_VITALS_URL;
-            if (endpoint) {
-              fetch(endpoint, {
-                method: "POST",
-                keepalive: true,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  name: metric.name,
-                  value: metric.value,
-                  delta: metric.delta,
-                  id: metric.id,
-                  page,
-                  url: location.href,
-                  ts: Date.now(),
-                }),
-              });
-            }
-          } catch {}
-        };
-        mod.onLCP(send);
-        mod.onINP(send);
-        mod.onCLS(send);
-      } catch {}
-    })();
-  }, [page]);
-
-  const goTo = (key) => setPage(key);
-  useScrollTopOnRoute(page);
-
-  const meta = META_BY_PAGE[page] || META_BY_PAGE.inicio;
-
-  return (
-    <div className="min-h-screen bg-white text-neutral-900 overflow-x-hidden">
-      <SEO page={page} title={meta.title} description={meta.desc} />
-      <Navbar page={page} goTo={goTo} />
-      <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo({ top: 0, left: 0, behavior: "auto" })}>
-        <motion.div
-          key={page}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.25 }}
-        >
-          {page === "inicio" && <InicioPage goTo={goTo} />}
-          {page === "historia" && <HistoriaPage />}
-          {page === "servicios" && <ServiciosPage goTo={goTo} />}
-          {page === "faq" && <FAQPage goTo={goTo} />}
-          {page === "contacto" && <ContactoPage />}
-        </motion.div>
-      </AnimatePresence>
-      <Footer goTo={goTo} />
-      <ContactFloating />
-      <TestSuite />
-    </div>
-  );
-}
