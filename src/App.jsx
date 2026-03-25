@@ -248,7 +248,8 @@ function SEO({ page, title, description }) {
       const upsert = (matchSelector, attrs) => {
         let el = head.querySelector(matchSelector);
         if (!el) { el = document.createElement('link'); head.appendChild(el); }
-        Object.entries(a
+        Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+      };
   const ldBreadcrumb = buildBreadcrumbSchema(page, canonicalHref, homeHref);
   const ldFAQ = page === "faq" ? buildFAQSchema(FAQS) : null;
 
