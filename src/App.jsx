@@ -232,7 +232,7 @@ function SEO({ page, title, description }) {
   const faviconSvg = homeHref ? new URL('favicon.svg', homeHref).href : undefined;
   const favicon32 = homeHref ? new URL('favicon-32x32.png', homeHref).href : undefined;
   const favicon16 = homeHref ? new URL('favicon-16x16.png', homeHref).href : undefined;
-  const appleIcon  = homeHref ? new URL('apple-touch-icon.png', homeHref).href : undefined;
+  const appleIcon = homeHref ? new URL('apple-touch-icon.png', homeHref).href : undefined;
   const manifestUrl = homeHref ? new URL('site.webmanifest', homeHref).href : undefined;
   const fallbackFavicon = "https://i.ibb.co/VYKcrNBR/mantarqlogopng.png";
 
@@ -250,6 +250,14 @@ function SEO({ page, title, description }) {
         if (!el) { el = document.createElement('link'); head.appendChild(el); }
         Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
       };
+      if (faviconSvg) upsert('link[rel="icon"][type="image/svg+xml"]', { rel: "icon", type: "image/svg+xml", href: faviconSvg });
+      if (favicon32) upsert('link[rel="icon"][sizes="32x32"]', { rel: "icon", type: "image/png", sizes: "32x32", href: favicon32 });
+      if (favicon16) upsert('link[rel="icon"][sizes="16x16"]', { rel: "icon", type: "image/png", sizes: "16x16", href: favicon16 });
+      if (appleIcon) upsert('link[rel="apple-touch-icon"]', { rel: "apple-touch-icon", href: appleIcon });
+      if (manifestUrl) upsert('link[rel="manifest"]', { rel: "manifest", href: manifestUrl });
+    } catch {}
+  }, [faviconSvg, favicon32, favicon16, appleIcon, manifestUrl]);
+
   const ldBreadcrumb = buildBreadcrumbSchema(page, canonicalHref, homeHref);
   const ldFAQ = page === "faq" ? buildFAQSchema(FAQS) : null;
 
@@ -269,7 +277,6 @@ function SEO({ page, title, description }) {
       {canonicalHref && <meta property="og:url" content={canonicalHref} />}
       <meta property="og:type" content="website" />
       <meta name="twitter:card" content="summary_large_image" />
-
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldLocal) }} />
       {ldBreadcrumb && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldBreadcrumb) }} />
@@ -297,7 +304,6 @@ function BrandLogo({ className }) {
     </div>
   );
 }
-
 
 function Reveal({ children, delay = 0 }) {
   return (
@@ -331,7 +337,6 @@ function Navbar({ page, goTo }) {
           </div>
         </div>
 
-        {/* Desktop nav */}
         <div className="hidden items-center gap-2 md:flex">
           {NAV_ITEMS.map((item) => (
             <button
@@ -342,22 +347,10 @@ function Navbar({ page, goTo }) {
               {item.label}
             </button>
           ))}
-          <a
-            href={COMPANY.facebook}
-            target="_blank"
-            rel="noreferrer"
-            title="Facebook"
-            className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50"
-          >
+          <a href={COMPANY.facebook} target="_blank" rel="noreferrer" title="Facebook" className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50">
             <Facebook className="h-5 w-5" />
           </a>
-          <a
-            href={COMPANY.instagram}
-            target="_blank"
-            rel="noreferrer"
-            title="Instagram"
-            className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50"
-          >
+          <a href={COMPANY.instagram} target="_blank" rel="noreferrer" title="Instagram" className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50">
             <Instagram className="h-5 w-5" />
           </a>
           <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer">
@@ -365,7 +358,6 @@ function Navbar({ page, goTo }) {
           </a>
         </div>
 
-        {/* Mobile menu button */}
         <button
           className="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700 md:hidden"
           onClick={() => setOpen((o) => !o)}
@@ -375,7 +367,6 @@ function Navbar({ page, goTo }) {
         </button>
       </div>
 
-      {/* Mobile dropdown */}
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
@@ -399,22 +390,10 @@ function Navbar({ page, goTo }) {
                 ))}
               </div>
               <div className="mt-3 flex items-center gap-2">
-                <a
-                  href={COMPANY.facebook}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700"
-                  title="Facebook"
-                >
+                <a href={COMPANY.facebook} target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700" title="Facebook">
                   <Facebook className="h-5 w-5" />
                 </a>
-                <a
-                  href={COMPANY.instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700"
-                  title="Instagram"
-                >
+                <a href={COMPANY.instagram} target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700" title="Instagram">
                   <Instagram className="h-5 w-5" />
                 </a>
                 <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer">
@@ -461,7 +440,6 @@ function LogosMarquee() {
           <div className="mb-4 text-center text-xs uppercase tracking-widest text-neutral-600">EMPRESAS QUE CONFÍAN EN NUESTRO TRABAJO</div>
         </Reveal>
 
-        {/* Mobile: slider con snap */}
         <div className="sm:hidden -mx-4 px-4">
           <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent" />
@@ -482,7 +460,6 @@ function LogosMarquee() {
           </div>
         </div>
 
-        {/* Desktop/Tablet: marquee continuo */}
         <div className="relative hidden overflow-hidden sm:block">
           <div className="animate-marquee flex min-w-full items-center gap-6 whitespace-nowrap">
             {duplicated.map((item, i) => (
@@ -508,7 +485,8 @@ function LogosMarquee() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 1000px; }
-      `}</style></section>
+      `}</style>
+    </section>
   );
 }
 
@@ -718,12 +696,7 @@ function ContactoPage() {
       setMessage("");
       formRef.current?.reset();
     } catch (e) {
-      const mail = `mailto:${COMPANY.email}?subject=${encodeURIComponent("Nueva consulta web – Manos a la Obra")}&body=${encodeURIComponent(`Nombre: ${name}
-Email: ${email}
-Teléfono: ${phone}
-
-Mensaje:
-${message}`)}`;
+      const mail = `mailto:${COMPANY.email}?subject=${encodeURIComponent("Nueva consulta web – Manos a la Obra")}&body=${encodeURIComponent(`Nombre: ${name}\nEmail: ${email}\nTeléfono: ${phone}\n\nMensaje:\n${message}`)}`;
       window.location.href = mail;
       setErr("No se pudo enviar automáticamente. Abrimos tu correo para enviar el mensaje manualmente.");
     } finally {
@@ -811,3 +784,47 @@ function ServiciosCTA({ goTo }) {
     <section className="py-16">
       <div className="mx-auto max-w-6xl px-4">
         <div className="rounded-2xl border border-neutral-200 bg-gradient-to-r from-neutral-50 to-white p-8 text-center">
+          <Reveal><h3 className="text-xl font-bold text-neutral-900">Conoce nuestros servicios</h3></Reveal>
+          <Reveal delay={0.05}><p className="mt-2 text-neutral-700">Descubre cómo podemos ayudarte con soluciones integrales y confiables.</p></Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-6">
+              <Button onClick={() => goTo("servicios")} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Ver servicios</Button>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function App() {
+  const [page, setPage] = useState("inicio");
+  useDarkMode();
+  useScrollTopOnRoute(page);
+
+  useEffect(() => {
+    onCLS(console.log);
+    onINP(console.log);
+    onLCP(console.log);
+  }, []);
+
+  const goTo = (key) => setPage(key);
+  const meta = META_BY_PAGE[page] || META_BY_PAGE.inicio;
+
+  return (
+    <>
+      <SEO page={page} title={meta.title} description={meta.desc} />
+      <Navbar page={page} goTo={goTo} />
+      <AnimatePresence mode="wait">
+        <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
+          {page === "inicio" && <InicioPage goTo={goTo} />}
+          {page === "historia" && <HistoriaPage />}
+          {page === "servicios" && <ServiciosPage goTo={goTo} />}
+          {page === "faq" && <FAQPage goTo={goTo} />}
+          {page === "contacto" && <ContactoPage />}
+        </motion.div>
+      </AnimatePresence>
+      <Footer goTo={goTo} />
+    </>
+  );
+}
