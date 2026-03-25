@@ -86,14 +86,14 @@ const TIMELINE = [
 
 const SERVICES = [
   { icon: Building2, name: "Paredes Gypsum", desc: "Instalación profesional de tabiques, cielos rasos y soluciones acústicas en gypsum." },
-  { icon: PlugZap, name: "Sistema Eléctrico", desc: "Mantenimiento y cableado seguro, tableros, canalizaciones y luminarias industriales y residenciales." },
+  { icon: PlugZap, name: "Sistema Eléctrico", desc: "Mantenimiento y cableado seguro, tableros, canalizaciones y luminarias para entornos industriales y comerciales." },
   { icon: Paintbrush, name: "Pintura Integral", desc: "Acabados premium: interiores, exteriores, epóxicos y señalética." },
   { icon: DoorOpen, name: "Puertas de Aluminio", desc: "Fabricación e instalación de puertas, ventanería y fachadas ligeras." },
   { icon: Factory, name: "Cubiertas Metálicas", desc: "Estructuras y cubiertas metálicas seguras, durables y estéticas." },
 ];
 
 const FAQS = [
-  { q: "¿Atienden solo a empresas?", a: "Trabajamos con todo tipo de clientes: desde grandes empresas hasta negocios pequeños y viviendas unifamiliares." },
+  { q: "¿Atienden solo a empresas?", a: "Nos especializamos en empresas, edificios comerciales e instalaciones industriales en Ecuador. Coordinamos equipos y logística según el alcance de cada proyecto." },
   { q: "¿Solo realizan trabajos de mantenimiento?", a: "Si bien somos especialistas en mantenimiento, también ofrecemos servicios de construcción, remodelación y reparación." },
   { q: "¿Trabajan fuera del país?", a: "Actualmente no ofrecemos servicios fuera de Ecuador." },
   { q: "¿Tienen el equipo necesario para los trabajos?", a: "Contamos con el equipo técnico necesario y con más de 10 años de experiencia." },
@@ -417,10 +417,10 @@ function Hero({ goTo }) {
       </div>
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-10">
         <Reveal>
-          <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-neutral-900 md:text-6xl">Excelencia en cada proyecto. <span className="text-neutral-700">Manos a la Obra</span></h1>
+          <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-neutral-900 md:text-6xl">El aliado de mantenimiento que tu empresa necesita.</h1>
         </Reveal>
         <Reveal delay={0.05}>
-          <p className="mt-6 max-w-3xl text-lg text-neutral-700">La excelencia es nuestro compromiso. Somos {COMPANY.brandName}, una empresa de mantenimiento que se enorgullece de su alta calidad y profesionalidad en el servicio. Ya sea un entorno comercial grande o una pequeña empresa, estamos equipados para manejar todos sus desafíos de mantenimiento.</p>
+          <p className="mt-6 max-w-3xl text-lg text-neutral-700">Somos Manos a la Obra, especializados en mantenimiento integral para empresas, edificios comerciales e instalaciones industriales en Ecuador. Un solo proveedor para todos tus desafíos de mantenimiento.</p>
         </Reveal>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button onClick={() => goTo("servicios")} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Conócenos</Button>
@@ -591,7 +591,7 @@ function HistoriaPage() {
     { year: "2015–2018", text: "Expansión de servicios a más provincias, primeros grandes clientes" },
     { year: 2019, text: "Diversificación a remodelaciones y obras pequeñas" },
     { year: 2022, text: "Implementación de procesos digitales, mejora operativa" },
-    { year: CURRENT_YEAR, text: "Actualmente seguimos brindando nuestros servicios" },
+    { year: CURRENT_YEAR, text: "Consolidados como referente de mantenimiento empresarial en Ecuador." },
   ];
   return (
     <main>
@@ -672,6 +672,7 @@ function ContactoPage() {
   const [ok, setOk] = useState(false);
   const [err, setErr] = useState("");
   const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
@@ -686,17 +687,18 @@ function ContactoPage() {
       const res = await fetch("https://formsubmit.co/ajax/" + encodeURIComponent(COMPANY.email), {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ name, email, phone, message, _subject: "Nueva consulta web – Manos a la Obra", _template: "table" }),
+        body: JSON.stringify({ name, company, email, phone, message, _subject: "Nueva consulta web – Manos a la Obra", _template: "table" }),
       });
       if (!res.ok) throw new Error("No se pudo enviar el formulario");
       setOk(true);
       setName("");
+      setCompany("");
       setEmail("");
       setPhone("");
       setMessage("");
       formRef.current?.reset();
     } catch (e) {
-      const mail = `mailto:${COMPANY.email}?subject=${encodeURIComponent("Nueva consulta web – Manos a la Obra")}&body=${encodeURIComponent(`Nombre: ${name}\nEmail: ${email}\nTeléfono: ${phone}\n\nMensaje:\n${message}`)}`;
+      const mail = `mailto:${COMPANY.email}?subject=${encodeURIComponent("Nueva consulta web – Manos a la Obra")}&body=${encodeURIComponent(`Nombre: ${name}\nEmpresa: ${company}\nEmail: ${email}\nTeléfono: ${phone}\n\nMensaje:\n${message}`)}`;
       window.location.href = mail;
       setErr("No se pudo enviar automáticamente. Abrimos tu correo para enviar el mensaje manualmente.");
     } finally {
@@ -725,6 +727,10 @@ function ContactoPage() {
                 <label className="mb-1 block text-sm text-neutral-700">Email</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="tunombre@correo.com" style={{ "--brand-primary": BRAND.primary }} />
               </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-neutral-700">Empresa <span className="text-neutral-400">(opcional)</span></label>
+              <input value={company} onChange={(e) => setCompany(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Nombre de tu empresa" style={{ "--brand-primary": BRAND.primary }} />
             </div>
             <div>
               <label className="mb-1 block text-sm text-neutral-700">Teléfono</label>
