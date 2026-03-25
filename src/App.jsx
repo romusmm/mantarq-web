@@ -81,19 +81,19 @@ const TIMELINE = [
   { year: "2015–2018", text: "Expansión de servicios a más provincias y primeros grandes clientes." },
   { year: "2019", text: "Diversificación a remodelaciones y obras pequeñas." },
   { year: "2022", text: "Implementación de procesos digitales y mejora operativa." },
-  { year: String(CURRENT_YEAR), text: "Actualmente seguimos brindando nuestros servicios." },
+  { year: String(CURRENT_YEAR), text: "Consolidados como referente de mantenimiento empresarial en Ecuador." },
 ];
 
 const SERVICES = [
-  { icon: Building2, name: "Paredes Gypsum", desc: "Instalación profesional de tabiques, cielos rasos y soluciones acústicas en gypsum." },
-  { icon: PlugZap, name: "Sistema Eléctrico", desc: "Mantenimiento y cableado seguro, tableros, canalizaciones y luminarias industriales y residenciales." },
-  { icon: Paintbrush, name: "Pintura Integral", desc: "Acabados premium: interiores, exteriores, epóxicos y señalética." },
-  { icon: DoorOpen, name: "Puertas de Aluminio", desc: "Fabricación e instalación de puertas, ventanería y fachadas ligeras." },
-  { icon: Factory, name: "Cubiertas Metálicas", desc: "Estructuras y cubiertas metálicas seguras, durables y estéticas." },
+  { icon: Building2, name: "Paredes Gypsum", desc: "Instalación de tabiques, cielos rasos y soluciones acústicas en gypsum para oficinas, plantas y espacios corporativos." },
+  { icon: PlugZap, name: "Sistema Eléctrico", desc: "Mantenimiento y cableado seguro, tableros, canalizaciones y luminarias para instalaciones industriales y edificios comerciales." },
+  { icon: Paintbrush, name: "Pintura Integral", desc: "Acabados premium para entornos corporativos: interiores, exteriores, epóxicos industriales y señalética." },
+  { icon: DoorOpen, name: "Puertas de Aluminio", desc: "Fabricación e instalación de puertas, ventanería y fachadas ligeras para edificios comerciales e industriales." },
+  { icon: Factory, name: "Cubiertas Metálicas", desc: "Estructuras y cubiertas metálicas de alto rendimiento para naves industriales, bodegas y plantas de producción." },
 ];
 
 const FAQS = [
-  { q: "¿Atienden solo a empresas?", a: "Trabajamos con todo tipo de clientes: desde grandes empresas hasta negocios pequeños y viviendas unifamiliares." },
+  { q: "¿Atienden solo a empresas?", a: "Nos especializamos en empresas, edificios comerciales e instalaciones industriales en Ecuador. Coordinamos equipos y logística según el alcance de cada proyecto." },
   { q: "¿Solo realizan trabajos de mantenimiento?", a: "Si bien somos especialistas en mantenimiento, también ofrecemos servicios de construcción, remodelación y reparación." },
   { q: "¿Trabajan fuera del país?", a: "Actualmente no ofrecemos servicios fuera de Ecuador." },
   { q: "¿Tienen el equipo necesario para los trabajos?", a: "Contamos con el equipo técnico necesario y con más de 10 años de experiencia." },
@@ -437,10 +437,10 @@ function Hero({ goTo }) {
       </div>
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-10">
         <Reveal>
-          <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-neutral-900 md:text-6xl">Excelencia en cada proyecto. <span className="text-neutral-700">Manos a la Obra</span></h1>
+          <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-neutral-900 md:text-6xl">El aliado de mantenimiento que tu empresa necesita.</h1>
         </Reveal>
         <Reveal delay={0.05}>
-          <p className="mt-6 max-w-3xl text-lg text-neutral-700">La excelencia es nuestro compromiso. Somos {COMPANY.brandName}, una empresa de mantenimiento que se enorgullece de su alta calidad y profesionalidad en el servicio. Ya sea un entorno comercial grande o una pequeña empresa, estamos equipados para manejar todos sus desafíos de mantenimiento.</p>
+          <p className="mt-6 max-w-3xl text-lg text-neutral-700">Somos {COMPANY.brandName}, especializados en mantenimiento integral para empresas, edificios comerciales e instalaciones industriales en Ecuador. Un solo proveedor para todos tus desafíos de mantenimiento.</p>
         </Reveal>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button onClick={() => goTo("servicios")} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Conócenos</Button>
@@ -612,7 +612,7 @@ function HistoriaPage() {
     { year: "2015–2018", text: "Expansión de servicios a más provincias, primeros grandes clientes" },
     { year: 2019, text: "Diversificación a remodelaciones y obras pequeñas" },
     { year: 2022, text: "Implementación de procesos digitales, mejora operativa" },
-    { year: CURRENT_YEAR, text: "Actualmente seguimos brindando nuestros servicios" },
+    { year: CURRENT_YEAR, text: "Consolidados como referente de mantenimiento empresarial en Ecuador." },
   ];
   return (
     <main>
@@ -693,6 +693,7 @@ function ContactoPage() {
   const [ok, setOk] = useState(false);
   const [err, setErr] = useState("");
   const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
@@ -747,6 +748,12 @@ ${message}`)}`;
                 <label className="mb-1 block text-sm text-neutral-700">Nombre</label>
                 <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Tu nombre" style={{ "--brand-primary": BRAND.primary }} />
               </div>
+              <div>
+                <label className="mb-1 block text-sm text-neutral-700">Empresa <span className="text-neutral-400">(opcional)</span></label>
+                <input value={company} onChange={(e) => setCompany(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Nombre de tu empresa" style={{ "--brand-primary": BRAND.primary }} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm text-neutral-700">Email</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="tunombre@correo.com" style={{ "--brand-primary": BRAND.primary }} />
