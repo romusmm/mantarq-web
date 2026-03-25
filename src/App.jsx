@@ -48,28 +48,28 @@ const NAV_ITEMS = [
 
 const META_BY_PAGE = {
   inicio: {
-    title: "Manos a la Obra | Mantenimiento y construcción en Cuenca",
-    desc: "MANTARQ S.A.S. – Manos a la Obra. Mantenimiento empresarial y residencial, construcción y remodelación en Cuenca y Ecuador. Calidad, seguridad y profesionalismo.",
+    title: "Mantenimiento Empresarial en Ecuador | Manos a la Obra – MANTARQ | Cuenca · Guayaquil",
+    desc: "Empresa de mantenimiento empresarial en Ecuador. Cuenca, Guayaquil y cobertura nacional. Mantenimiento preventivo, eléctrico, pintura y más.",
     path: "/",
   },
   historia: {
-    title: "Nuestra historia | Manos a la Obra",
-    desc: "De 2014 a hoy, hitos y evolución de MANTARQ S.A.S. en mantenimiento y construcción.",
+    title: "Nuestra Historia | Empresa de Mantenimiento desde 2014 | Manos a la Obra Ecuador",
+    desc: "Desde 2014 en Cuenca, Ecuador, Manos a la Obra es referente en mantenimiento empresarial. Expandidos a Guayaquil y cobertura nacional.",
     path: "/historia/",
   },
   servicios: {
-    title: "Servicios | Manos a la Obra",
-    desc: "Gypsum, eléctrico, pintura, aluminio y cubiertas metálicas. Soluciones integrales para empresas y residencias.",
+    title: "Servicios de Mantenimiento Industrial y Comercial en Ecuador | Manos a la Obra",
+    desc: "Servicios de mantenimiento industrial y comercial en Ecuador: gypsum, eléctrico, pintura, aluminio y cubiertas. Cuenca, Guayaquil y todo el país.",
     path: "/servicios/",
   },
   faq: {
-    title: "Preguntas frecuentes | Manos a la Obra",
-    desc: "Respuestas claras sobre alcance, ciudades, equipo y más.",
+    title: "Preguntas Frecuentes | Mantenimiento Empresarial en Ecuador | Manos a la Obra",
+    desc: "Preguntas frecuentes sobre mantenimiento empresarial en Ecuador. Cobertura en Cuenca, Guayaquil y todo el país. Más de 10 años de experiencia.",
     path: "/faq/",
   },
   contacto: {
-    title: "Contacto | Manos a la Obra",
-    desc: "Solicita una cotización sin compromiso en Cuenca, Ecuador.",
+    title: "Solicita una Propuesta de Mantenimiento | Manos a la Obra – Cuenca y Guayaquil",
+    desc: "Solicita una propuesta de mantenimiento empresarial sin compromiso. Atendemos en Cuenca, Guayaquil y todo Ecuador. Respuesta rápida garantizada.",
     path: "/contacto/",
   },
 };
@@ -85,11 +85,11 @@ const TIMELINE = [
 ];
 
 const SERVICES = [
-  { icon: Building2, name: "Paredes Gypsum", desc: "Instalación profesional de tabiques, cielos rasos y soluciones acústicas en gypsum." },
-  { icon: PlugZap, name: "Sistema Eléctrico", desc: "Mantenimiento y cableado seguro, tableros, canalizaciones y luminarias para entornos industriales y comerciales." },
-  { icon: Paintbrush, name: "Pintura Integral", desc: "Acabados premium: interiores, exteriores, epóxicos y señalética." },
-  { icon: DoorOpen, name: "Puertas de Aluminio", desc: "Fabricación e instalación de puertas, ventanería y fachadas ligeras." },
-  { icon: Factory, name: "Cubiertas Metálicas", desc: "Estructuras y cubiertas metálicas seguras, durables y estéticas." },
+  { icon: Building2, name: "Paredes Gypsum", desc: "Instalación profesional de tabiques, cielos rasos y soluciones acústicas en gypsum para empresas en Ecuador." },
+  { icon: PlugZap, name: "Sistema Eléctrico", desc: "Mantenimiento y cableado seguro, tableros, canalizaciones y luminarias para entornos industriales y comerciales en Ecuador." },
+  { icon: Paintbrush, name: "Pintura Integral", desc: "Acabados premium para instalaciones comerciales e industriales: interiores, exteriores, epóxicos y señalética." },
+  { icon: DoorOpen, name: "Puertas de Aluminio", desc: "Fabricación e instalación de puertas, ventanería y fachadas ligeras para empresas en Ecuador." },
+  { icon: Factory, name: "Cubiertas Metálicas", desc: "Estructuras y cubiertas metálicas seguras, durables y estéticas para instalaciones industriales en Ecuador." },
 ];
 
 const FAQS = [
@@ -176,7 +176,8 @@ function buildLocalBusinessSchema(c, canonical) {
       longitude: c.mapsLng,
     },
     sameAs: [c.facebook, c.instagram].filter(Boolean),
-    areaServed: "Ecuador",
+    areaServed: ["Cuenca", "Guayaquil", "Ecuador"],
+    hasMap: c.mapsUrl,
   };
 }
 
@@ -209,6 +210,21 @@ function buildFAQSchema(faqs) {
       acceptedAnswer: { "@type": "Answer", text: f.a },
     })),
   };
+}
+
+function buildServicesSchema(services, company, canonical) {
+  return services.map((s) => ({
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: s.name,
+    description: s.desc,
+    provider: {
+      "@type": "LocalBusiness",
+      name: company.brandName,
+      url: canonical || "",
+    },
+    areaServed: "Ecuador",
+  }));
 }
 
 function SEO({ page, title, description }) {
@@ -260,10 +276,12 @@ function SEO({ page, title, description }) {
 
   const ldBreadcrumb = buildBreadcrumbSchema(page, canonicalHref, homeHref);
   const ldFAQ = page === "faq" ? buildFAQSchema(FAQS) : null;
+  const ldServices = page === "servicios" ? buildServicesSchema(SERVICES, COMPANY, canonicalHref) : null;
 
   return (
     <>
       {description && <meta name="description" content={description} />}
+      <meta name="robots" content="index, follow" />
       {canonicalHref && <link rel="canonical" href={canonicalHref} />}
       {faviconSvg && <link rel="icon" type="image/svg+xml" href={faviconSvg} />}
       {favicon32 && <link rel="icon" type="image/png" sizes="32x32" href={favicon32} />}
@@ -276,6 +294,9 @@ function SEO({ page, title, description }) {
       {description && <meta property="og:description" content={description} />}
       {canonicalHref && <meta property="og:url" content={canonicalHref} />}
       <meta property="og:type" content="website" />
+      <meta property="og:image" content={ICON_URL} />
+      <meta property="og:site_name" content="Manos a la Obra – MANTARQ" />
+      <meta property="og:locale" content="es_EC" />
       <meta name="twitter:card" content="summary_large_image" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldLocal) }} />
       {ldBreadcrumb && (
@@ -284,6 +305,9 @@ function SEO({ page, title, description }) {
       {ldFAQ && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldFAQ) }} />
       )}
+      {ldServices && ldServices.map((s, i) => (
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
+      ))}
     </>
   );
 }
@@ -417,10 +441,10 @@ function Hero({ goTo }) {
       </div>
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-10">
         <Reveal>
-          <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-neutral-900 md:text-6xl">El aliado de mantenimiento que tu empresa necesita.</h1>
+          <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-neutral-900 md:text-6xl">El aliado de mantenimiento que tu empresa necesita en Ecuador</h1>
         </Reveal>
         <Reveal delay={0.05}>
-          <p className="mt-6 max-w-3xl text-lg text-neutral-700">Somos Manos a la Obra, especializados en mantenimiento integral para empresas, edificios comerciales e instalaciones industriales en Ecuador. Un solo proveedor para todos tus desafíos de mantenimiento.</p>
+          <p className="mt-6 max-w-3xl text-lg text-neutral-700">Somos Manos a la Obra, especializados en mantenimiento integral para empresas en Cuenca, Guayaquil y todo Ecuador. Un solo proveedor para todos tus desafíos de mantenimiento.</p>
         </Reveal>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button onClick={() => goTo("servicios")} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Conócenos</Button>
