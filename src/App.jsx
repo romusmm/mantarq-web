@@ -501,7 +501,7 @@ function LogosMarquee() {
 
       <style>{`
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-33.333%); } }
-        .animate-marquee { animation: marquee var(--marquee-duration,40s) linear infinite; will-change: transform; }
+        .animate-marquee { animation: marquee var(--marquee-duration,30s) linear infinite; will-change: transform; }
         .logo-img-desktop, .logo-img-mobile { filter: grayscale(1) contrast(1) brightness(0.6) drop-shadow(0 0 1px rgba(0,0,0,0.18)); transform: translateZ(0); transition: filter .2s ease, opacity .2s ease; }
         .logo-item-desktop:hover .logo-img-desktop { filter: none; }
         @media (max-width: 640px) { :root { --marquee-duration: 40s; } .logo-img-mobile { filter: grayscale(1) brightness(0.65); } }
