@@ -456,7 +456,7 @@ function Hero({ goTo }) {
 }
 
 function LogosMarquee() {
-  const duplicated = [...CLIENT_LOGOS, ...CLIENT_LOGOS];
+  const duplicated = [...CLIENT_LOGOS, ...CLIENT_LOGOS, ...CLIENT_LOGOS];
   return (
     <section className="cv-auto border-y border-neutral-200 py-8">
       <div className="mx-auto max-w-7xl px-4">
@@ -485,7 +485,7 @@ function LogosMarquee() {
         </div>
 
         <div className="relative hidden overflow-hidden sm:block">
-          <div className="animate-marquee flex min-w-full items-center gap-6 whitespace-nowrap">
+          <div className="animate-marquee flex items-center gap-6 whitespace-nowrap">
             {duplicated.map((item, i) => (
               <div key={i} className="logo-item-desktop group flex h-24 min-w-[320px] items-center justify-center rounded-xl border border-neutral-200 bg-white px-10">
                 {item.url ? (
@@ -500,8 +500,8 @@ function LogosMarquee() {
       </div>
 
       <style>{`
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .animate-marquee { animation: marquee var(--marquee-duration,28s) linear infinite; will-change: transform; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-33.333%); } }
+        .animate-marquee { animation: marquee var(--marquee-duration,40s) linear infinite; will-change: transform; }
         .logo-img-desktop, .logo-img-mobile { filter: grayscale(1) contrast(1) brightness(0.6) drop-shadow(0 0 1px rgba(0,0,0,0.18)); transform: translateZ(0); transition: filter .2s ease, opacity .2s ease; }
         .logo-item-desktop:hover .logo-img-desktop { filter: none; }
         @media (max-width: 640px) { :root { --marquee-duration: 40s; } .logo-img-mobile { filter: grayscale(1) brightness(0.65); } }
