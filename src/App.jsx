@@ -12,6 +12,7 @@ import {
   MapPin,
   Facebook,
   Instagram,
+  Linkedin,
   ChevronDown,
   Send,
   Menu,
@@ -33,6 +34,7 @@ const COMPANY = {
   address: "Fray Vicente Solano y Avenida del Estado. Edificio CICA, Oficina 520",
   facebook: "https://www.facebook.com/Manosalaobra.Cuenca",
   instagram: "https://www.instagram.com/manosalaobraecuador",
+  linkedin: "https://www.linkedin.com/company/mantarq",
   mapsUrl: "https://www.google.com/maps/place/Manos+a+la+Obra+MANTARQ+SAS/@-2.9060613,-79.0094591,17z/data=!3m1!4b1!4m6!3m5!1s0x91cd19006167e407:0x8c14fa3327f3b7d!8m2!3d-2.9060613!4d-79.0068842!16s%2Fg%2F11vyj3pb6c?entry=ttu&g_ep=EgoyMDI1MDgxMy4wIKXMDSoASAFQAw%3D%3D",
   mapsLat: -2.9060613,
   mapsLng: -79.0068842,
@@ -77,9 +79,9 @@ const META_BY_PAGE = {
 const CURRENT_YEAR = new Date().getFullYear();
 
 const TIMELINE = [
-  { year: "2014", text: "Fundación en Cuenca, Ecuador." },
-  { year: "2015–2018", text: "Expansión de servicios a más provincias y primeros grandes clientes." },
-  { year: "2019", text: "Diversificación a remodelaciones y obras pequeñas." },
+  { year: "2014", text: "Inicio de Actividades en Cuenca, Ecuador." },
+  { year: "2015–2018", text: "Expansión de servicios a más provincias." },
+  { year: "2019", text: "Diversificación a remodelaciones y construcción." },
   { year: "2022", text: "Implementación de procesos digitales y mejora operativa." },
   { year: String(CURRENT_YEAR), text: "Actualmente seguimos brindando nuestros servicios." },
 ];
@@ -377,6 +379,9 @@ function Navbar({ page, goTo }) {
           <a href={COMPANY.instagram} target="_blank" rel="noreferrer" title="Instagram" className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50">
             <Instagram className="h-5 w-5" />
           </a>
+          <a href={COMPANY.linkedin} target="_blank" rel="noreferrer" title="LinkedIn" className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50">
+            <Linkedin className="h-5 w-5" />
+          </a>
           <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer">
             <Button className="border border-neutral-200 bg-[var(--brand-primary)] text-white hover:translate-y-[-1px]" style={{ "--brand-primary": BRAND.primary }}>Solicita tu servicio</Button>
           </a>
@@ -420,6 +425,9 @@ function Navbar({ page, goTo }) {
                 <a href={COMPANY.instagram} target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700" title="Instagram">
                   <Instagram className="h-5 w-5" />
                 </a>
+                <a href={COMPANY.linkedin} target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700" title="LinkedIn">
+                  <Linkedin className="h-5 w-5" />
+                </a>
                 <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer">
                   <Button className="border border-neutral-200 bg-[var(--brand-primary)] text-white" style={{ "--brand-primary": BRAND.primary }}>Solicita tu servicio</Button>
                 </a>
@@ -444,7 +452,7 @@ function Hero({ goTo }) {
           <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-neutral-900 md:text-6xl">El aliado de mantenimiento que tu empresa necesita en Ecuador</h1>
         </Reveal>
         <Reveal delay={0.05}>
-          <p className="mt-6 max-w-3xl text-lg text-neutral-700">Somos Manos a la Obra, especializados en mantenimiento integral para empresas en Cuenca, Guayaquil y todo Ecuador. Un solo proveedor para todos tus desafíos de mantenimiento.</p>
+          <p className="mt-6 max-w-3xl text-lg text-neutral-700">Somos Manos a la Obra, especializados en mantenimiento integral para empresas en todo Ecuador. Un solo proveedor para todos tus desafíos de mantenimiento.</p>
         </Reveal>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button onClick={() => goTo("servicios")} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Conócenos</Button>
@@ -611,11 +619,11 @@ function Footer({ goTo }) {
 function HistoriaPage() {
   const CURRENT_YEAR = new Date().getFullYear();
   const STEPS = [
-    { year: 2014, text: "Fundación en Cuenca, Ecuador" },
-    { year: "2015–2018", text: "Expansión de servicios a más provincias, primeros grandes clientes" },
-    { year: 2019, text: "Diversificación a remodelaciones y obras pequeñas" },
+    { year: 2014, text: "Inicio de Actividades en Cuenca, Ecuador" },
+    { year: "2015–2018", text: "Expansión de servicios a más provincias" },
+    { year: 2019, text: "Diversificación a remodelaciones y construcción" },
     { year: 2022, text: "Implementación de procesos digitales, mejora operativa" },
-    { year: CURRENT_YEAR, text: "Consolidados como referente de mantenimiento empresarial en Ecuador." },
+    { year: CURRENT_YEAR, text: "Consolidados como referente de mantenimiento empresarial en Ecuador" },
   ];
   return (
     <main>
