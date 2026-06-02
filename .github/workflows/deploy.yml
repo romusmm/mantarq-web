@@ -18,10 +18,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # En Project Pages (actual): base del repo
-      VITE_BASE: "/mantarq-web/"
-      # Si luego compras dominio, define CUSTOM_DOMAIN: "www.mantarq.com"
-      CUSTOM_DOMAIN: ""
+      # 1. Cambiado a "/" porque ya no usas subcarpeta de repositorio
+      VITE_BASE: "/"
+      # 2. Agregamos tu dominio personalizado aquí
+      CUSTOM_DOMAIN: "www.mantarq.com"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
