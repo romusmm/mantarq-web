@@ -34,7 +34,7 @@ const COMPANY = {
   address: "Fray Vicente Solano y Avenida del Estado. Edificio CICA, Oficina 520",
   facebook: "https://www.facebook.com/Manosalaobra.Cuenca",
   instagram: "https://www.instagram.com/manosalaobraecuador",
-  linkedin: "https://www.linkedin.com/company/mantarq",
+  linkedin: "https://www.linkedin.com/company/manos-a-la-obra-mantarq-s-a-s/",
   mapsUrl: "https://www.google.com/maps/place/Manos+a+la+Obra+MANTARQ+SAS/@-2.9060613,-79.0094591,17z/data=!3m1!4b1!4m6!3m5!1s0x91cd19006167e407:0x8c14fa3327f3b7d!8m2!3d-2.9060613!4d-79.0068842!16s%2Fg%2F11vyj3pb6c?entry=ttu&g_ep=EgoyMDI1MDgxMy4wIKXMDSoASAFQAw%3D%3D",
   mapsLat: -2.9060613,
   mapsLng: -79.0068842,
