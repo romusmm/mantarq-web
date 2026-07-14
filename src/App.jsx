@@ -2,11 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { onCLS, onINP, onLCP } from "web-vitals";
 import {
-  Paintbrush,
-  PlugZap,
-  DoorOpen,
-  Factory,
-  Building2,
   Phone,
   Mail,
   MapPin,
@@ -18,27 +13,21 @@ import {
   Menu,
   X
 } from "lucide-react";
-
-const BRAND = {
-  primary: "#08549C",
-  accent: "#FFC200",
-};
-
-const COMPANY = {
-  legalName: "MANTARQ S.A.S.",
-  brandName: "Manos a la Obra",
-  city: "Cuenca, Ecuador",
-  email: "info@mantarq.com",
-  phone: "+593 99 624 2213",
-  phoneHref: "593996242213",
-  address: "Fray Vicente Solano y Avenida del Estado. Edificio CICA, Oficina 520",
-  facebook: "https://www.facebook.com/Manosalaobra.Cuenca",
-  instagram: "https://www.instagram.com/manosalaobraecuador",
-  linkedin: "https://www.linkedin.com/company/manos-a-la-obra-mantarq-s-a-s/",
-  mapsUrl: "https://www.google.com/maps/place/Manos+a+la+Obra+MANTARQ+SAS/@-2.9060613,-79.0094591,17z/data=!3m1!4b1!4m6!3m5!1s0x91cd19006167e407:0x8c14fa3327f3b7d!8m2!3d-2.9060613!4d-79.0068842!16s%2Fg%2F11vyj3pb6c?entry=ttu&g_ep=EgoyMDI1MDgxMy4wIKXMDSoASAFQAw%3D%3D",
-  mapsLat: -2.9060613,
-  mapsLng: -79.0068842,
-};
+import {
+  BRAND,
+  COMPANY,
+  META_BY_PAGE,
+  withBase,
+  pageFromPathname,
+  normalizePath,
+  SERVICES,
+  FAQS,
+  ICON_URL,
+  buildLocalBusinessSchema,
+  buildBreadcrumbSchema,
+  buildFAQSchema,
+  buildServicesSchema,
+} from "./site-data.js";
 
 const NAV_ITEMS = [
   { key: "inicio", label: "Inicio" },
@@ -48,33 +37,11 @@ const NAV_ITEMS = [
   { key: "contacto", label: "Contacto" },
 ];
 
-const META_BY_PAGE = {
-  inicio: {
-    title: "Mantenimiento Empresarial en Ecuador | Manos a la Obra – MANTARQ | Cuenca · Guayaquil",
-    desc: "Empresa de mantenimiento empresarial en Ecuador. Cuenca, Guayaquil y cobertura nacional. Mantenimiento preventivo, eléctrico, pintura y más.",
-    path: "/",
-  },
-  historia: {
-    title: "Nuestra Historia | Empresa de Mantenimiento desde 2014 | Manos a la Obra Ecuador",
-    desc: "Desde 2014 en Cuenca, Ecuador, Manos a la Obra es referente en mantenimiento empresarial. Expandidos a Guayaquil y cobertura nacional.",
-    path: "/historia/",
-  },
-  servicios: {
-    title: "Servicios de Mantenimiento Industrial y Comercial en Ecuador | Manos a la Obra",
-    desc: "Servicios de mantenimiento industrial y comercial en Ecuador: gypsum, eléctrico, pintura, aluminio y cubiertas. Cuenca, Guayaquil y todo el país.",
-    path: "/servicios/",
-  },
-  faq: {
-    title: "Preguntas Frecuentes | Mantenimiento Empresarial en Ecuador | Manos a la Obra",
-    desc: "Preguntas frecuentes sobre mantenimiento empresarial en Ecuador. Cobertura en Cuenca, Guayaquil y todo el país. Más de 10 años de experiencia.",
-    path: "/faq/",
-  },
-  contacto: {
-    title: "Solicita una Propuesta de Mantenimiento | Manos a la Obra – Cuenca y Guayaquil",
-    desc: "Solicita una propuesta de mantenimiento empresarial sin compromiso. Atendemos en Cuenca, Guayaquil y todo Ecuador. Respuesta rápida garantizada.",
-    path: "/contacto/",
-  },
-};
+function handleNavClick(e, action) {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  e.preventDefault();
+  action();
+}
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -84,22 +51,6 @@ const TIMELINE = [
   { year: "2019", text: "Diversificación a remodelaciones y construcción." },
   { year: "2022", text: "Implementación de procesos digitales y mejora operativa." },
   { year: String(CURRENT_YEAR), text: "Actualmente seguimos brindando nuestros servicios." },
-];
-
-const SERVICES = [
-  { icon: Building2, name: "Paredes Gypsum", desc: "Instalación profesional de tabiques, cielos rasos y soluciones acústicas en gypsum para empresas en Ecuador." },
-  { icon: PlugZap, name: "Sistema Eléctrico", desc: "Mantenimiento y cableado seguro, tableros, canalizaciones y luminarias para entornos industriales y comerciales en Ecuador." },
-  { icon: Paintbrush, name: "Pintura Integral", desc: "Acabados premium para instalaciones comerciales e industriales: interiores, exteriores, epóxicos y señalética." },
-  { icon: DoorOpen, name: "Puertas de Aluminio", desc: "Fabricación e instalación de puertas, ventanería y fachadas ligeras para empresas en Ecuador." },
-  { icon: Factory, name: "Cubiertas Metálicas", desc: "Estructuras y cubiertas metálicas seguras, durables y estéticas para instalaciones industriales en Ecuador." },
-];
-
-const FAQS = [
-  { q: "¿Atienden solo a empresas?", a: "Nos especializamos en empresas, edificios comerciales e instalaciones industriales en Ecuador. Coordinamos equipos y logística según el alcance de cada proyecto." },
-  { q: "¿Solo realizan trabajos de mantenimiento?", a: "Si bien somos especialistas en mantenimiento, también ofrecemos servicios de construcción, remodelación y reparación." },
-  { q: "¿Trabajan fuera del país?", a: "Actualmente no ofrecemos servicios fuera de Ecuador." },
-  { q: "¿Tienen el equipo necesario para los trabajos?", a: "Contamos con el equipo técnico necesario y con más de 10 años de experiencia." },
-  { q: "¿En qué ciudades brindan servicios?", a: "Brindamos cobertura a nivel nacional en Ecuador; coordinamos equipos y logística según el alcance de cada proyecto." },
 ];
 
 const CLIENT_LOGOS = [
@@ -112,8 +63,6 @@ const CLIENT_LOGOS = [
   { name: "Nucleomed", url: "https://i.ibb.co/4gTcdhb7/nucleomedlogo.webp" },
   { name: "Universidad Católica de Cuenca", url: "https://i.ibb.co/F401j09F/Cato-De-Cuenca-Logo-removebg-preview.png" },
 ];
-
-const ICON_URL = "https://i.ibb.co/VYKcrNBR/mantarqlogopng.png";
 
 const Button = ({ as: As = "button", children, className = "", ...props }) => (
   <As className={`inline-flex cursor-pointer items-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ${className}`} {...props}>{children}</As>
@@ -142,7 +91,7 @@ function useStickyNav() {
 
 function useScrollTopOnRoute(pageKey) {
   useEffect(() => {
-    try { if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual"; } catch {}
+    try { if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual"; } catch { /* noop */ }
     const scrollNow = () => window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     scrollNow();
     const t0 = setTimeout(scrollNow, 0);
@@ -153,87 +102,33 @@ function useScrollTopOnRoute(pageKey) {
   }, [pageKey]);
 }
 
-function buildLocalBusinessSchema(c, canonical) {
-  const parts = (c.city || "").split(",").map((s) => s.trim());
-  const locality = parts[0] || "Cuenca";
-  const region = parts[1] || "Azuay";
-  return {
-    "@context": "https://schema.org",
-    "@type": "HomeAndConstructionBusiness",
-    name: c.brandName,
-    legalName: c.legalName,
-    url: canonical || "",
-    telephone: c.phoneHref ? "+" + c.phoneHref : c.phone,
-    email: c.email,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: c.address,
-      addressLocality: locality,
-      addressRegion: region,
-      addressCountry: "EC",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: c.mapsLat,
-      longitude: c.mapsLng,
-    },
-    sameAs: [c.facebook, c.instagram].filter(Boolean),
-    areaServed: ["Cuenca", "Guayaquil", "Ecuador"],
-    hasMap: c.mapsUrl,
-  };
+function upsertHeadEl(head, selector, tag, attrs) {
+  let el = head.querySelector(selector);
+  if (!el) { el = document.createElement(tag); head.appendChild(el); }
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
 }
 
-function buildBreadcrumbSchema(page, canonical, home) {
-  const names = {
-    inicio: "Inicio",
-    historia: "Historia",
-    servicios: "Servicios",
-    faq: "Preguntas frecuentes",
-    contacto: "Contacto",
-  };
-  if (page === "inicio") return null;
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Inicio", item: home || canonical },
-      { "@type": "ListItem", position: 2, name: names[page] || page, item: canonical },
-    ],
-  };
+function upsertJsonLd(head, id, data) {
+  if (!data) { head.querySelector(`script#${id}`)?.remove(); return; }
+  let el = head.querySelector(`script#${id}`);
+  if (!el) {
+    el = document.createElement("script");
+    el.type = "application/ld+json";
+    el.id = id;
+    head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(data);
 }
 
-function buildFAQSchema(faqs) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((f) => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
-  };
-}
-
-function buildServicesSchema(services, company, canonical) {
-  return services.map((s) => ({
-    "@context": "https://schema.org",
-    "@type": "Service",
-    name: s.name,
-    description: s.desc,
-    provider: {
-      "@type": "LocalBusiness",
-      name: company.brandName,
-      url: canonical || "",
-    },
-    areaServed: "Ecuador",
-  }));
-}
-
+// Los metadatos se gestionan de forma imperativa sobre document.head (no como JSX
+// devuelto por el componente) porque este proyecto usa React 18, que no hace
+// "hoisting" automático de <title>/<meta>/<link> renderizados fuera de <head>.
+// Para el HTML estático (sin JS) estos mismos valores ya vienen incluidos por
+// prerender.jsx vía la opción `head` del plugin de prerender.
 function SEO({ page, title, description }) {
-  useEffect(() => { if (title) document.title = title; }, [title]);
   const base = (import.meta?.env?.BASE_URL || "/").replace(/\/+$/, "/");
-  const map = { inicio: "/", historia: "/historia/", servicios: "/servicios/", faq: "/faq/", contacto: "/contacto/" };
-  const path = map[page] || "/";
+  const path = (META_BY_PAGE[page] || META_BY_PAGE.inicio).path;
   const [canonicalHref, setCanonicalHref] = useState("");
   const [homeHref, setHomeHref] = useState("");
   useEffect(() => {
@@ -244,74 +139,58 @@ function SEO({ page, title, description }) {
         setCanonicalHref(mk(path));
         setHomeHref(mk("/"));
       }
-    } catch {}
-  }, [page]);
+    } catch { /* noop */ }
+  }, [page, base, path]);
 
   const faviconSvg = homeHref ? new URL('favicon.svg', homeHref).href : undefined;
   const favicon32 = homeHref ? new URL('favicon-32x32.png', homeHref).href : undefined;
   const favicon16 = homeHref ? new URL('favicon-16x16.png', homeHref).href : undefined;
   const appleIcon = homeHref ? new URL('apple-touch-icon.png', homeHref).href : undefined;
   const manifestUrl = homeHref ? new URL('site.webmanifest', homeHref).href : undefined;
-  const fallbackFavicon = "https://i.ibb.co/VYKcrNBR/mantarqlogopng.png";
 
   const ldLocal = buildLocalBusinessSchema(COMPANY, canonicalHref);
-
-  useEffect(() => {
-    try {
-      const head = document.head;
-      head.querySelectorAll('link[rel="icon"]').forEach((lnk) => {
-        const href = lnk.getAttribute('href') || '';
-        if (/vite\.svg/i.test(href)) lnk.remove();
-      });
-      const upsert = (matchSelector, attrs) => {
-        let el = head.querySelector(matchSelector);
-        if (!el) { el = document.createElement('link'); head.appendChild(el); }
-        Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
-      };
-      if (faviconSvg) upsert('link[rel="icon"][type="image/svg+xml"]', { rel: "icon", type: "image/svg+xml", href: faviconSvg });
-      if (favicon32) upsert('link[rel="icon"][sizes="32x32"]', { rel: "icon", type: "image/png", sizes: "32x32", href: favicon32 });
-      if (favicon16) upsert('link[rel="icon"][sizes="16x16"]', { rel: "icon", type: "image/png", sizes: "16x16", href: favicon16 });
-      if (appleIcon) upsert('link[rel="apple-touch-icon"]', { rel: "apple-touch-icon", href: appleIcon });
-      if (manifestUrl) upsert('link[rel="manifest"]', { rel: "manifest", href: manifestUrl });
-    } catch {}
-  }, [faviconSvg, favicon32, favicon16, appleIcon, manifestUrl]);
-
   const ldBreadcrumb = buildBreadcrumbSchema(page, canonicalHref, homeHref);
   const ldFAQ = page === "faq" ? buildFAQSchema(FAQS) : null;
   const ldServices = page === "servicios" ? buildServicesSchema(SERVICES, COMPANY, canonicalHref) : null;
 
-  return (
-    <>
-      {description && <meta name="description" content={description} />}
-      <meta name="robots" content="index, follow" />
-      {canonicalHref && <link rel="canonical" href={canonicalHref} />}
-      {faviconSvg && <link rel="icon" type="image/svg+xml" href={faviconSvg} />}
-      {favicon32 && <link rel="icon" type="image/png" sizes="32x32" href={favicon32} />}
-      {favicon16 && <link rel="icon" type="image/png" sizes="16x16" href={favicon16} />}
-      {appleIcon && <link rel="apple-touch-icon" href={appleIcon} />}
-      {manifestUrl && <link rel="manifest" href={manifestUrl} />}
-      <link rel="icon" href={fallbackFavicon} />
-      <meta name="theme-color" content={BRAND.primary} />
-      {title && <meta property="og:title" content={title} />}
-      {description && <meta property="og:description" content={description} />}
-      {canonicalHref && <meta property="og:url" content={canonicalHref} />}
-      <meta property="og:type" content="website" />
-      <meta property="og:image" content={ICON_URL} />
-      <meta property="og:site_name" content="Manos a la Obra – MANTARQ" />
-      <meta property="og:locale" content="es_EC" />
-      <meta name="twitter:card" content="summary_large_image" />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldLocal) }} />
-      {ldBreadcrumb && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldBreadcrumb) }} />
-      )}
-      {ldFAQ && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldFAQ) }} />
-      )}
-      {ldServices && ldServices.map((s, i) => (
-        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
-      ))}
-    </>
-  );
+  useEffect(() => {
+    try {
+      const head = document.head;
+
+      if (title) document.title = title;
+      if (description) upsertHeadEl(head, 'meta[name="description"]', "meta", { name: "description", content: description });
+      upsertHeadEl(head, 'meta[name="robots"]', "meta", { name: "robots", content: "index, follow" });
+      upsertHeadEl(head, 'meta[name="theme-color"]', "meta", { name: "theme-color", content: BRAND.primary });
+      if (canonicalHref) upsertHeadEl(head, 'link[rel="canonical"]', "link", { rel: "canonical", href: canonicalHref });
+      if (title) upsertHeadEl(head, 'meta[property="og:title"]', "meta", { property: "og:title", content: title });
+      if (description) upsertHeadEl(head, 'meta[property="og:description"]', "meta", { property: "og:description", content: description });
+      if (canonicalHref) upsertHeadEl(head, 'meta[property="og:url"]', "meta", { property: "og:url", content: canonicalHref });
+      upsertHeadEl(head, 'meta[property="og:type"]', "meta", { property: "og:type", content: "website" });
+      upsertHeadEl(head, 'meta[property="og:image"]', "meta", { property: "og:image", content: ICON_URL });
+      upsertHeadEl(head, 'meta[property="og:site_name"]', "meta", { property: "og:site_name", content: "Manos a la Obra – MANTARQ" });
+      upsertHeadEl(head, 'meta[property="og:locale"]', "meta", { property: "og:locale", content: "es_EC" });
+      upsertHeadEl(head, 'meta[name="twitter:card"]', "meta", { name: "twitter:card", content: "summary_large_image" });
+
+      head.querySelectorAll('link[rel="icon"]').forEach((lnk) => {
+        const href = lnk.getAttribute('href') || '';
+        if (/vite\.svg/i.test(href)) lnk.remove();
+      });
+      if (faviconSvg) upsertHeadEl(head, 'link[rel="icon"][type="image/svg+xml"]', "link", { rel: "icon", type: "image/svg+xml", href: faviconSvg });
+      if (favicon32) upsertHeadEl(head, 'link[rel="icon"][sizes="32x32"]', "link", { rel: "icon", type: "image/png", sizes: "32x32", href: favicon32 });
+      if (favicon16) upsertHeadEl(head, 'link[rel="icon"][sizes="16x16"]', "link", { rel: "icon", type: "image/png", sizes: "16x16", href: favicon16 });
+      if (appleIcon) upsertHeadEl(head, 'link[rel="apple-touch-icon"]', "link", { rel: "apple-touch-icon", href: appleIcon });
+      if (manifestUrl) upsertHeadEl(head, 'link[rel="manifest"]', "link", { rel: "manifest", href: manifestUrl });
+      upsertHeadEl(head, 'link[rel="icon"][data-fallback="true"]', "link", { rel: "icon", href: ICON_URL, "data-fallback": "true" });
+
+      upsertJsonLd(head, "ld-local", ldLocal);
+      upsertJsonLd(head, "ld-breadcrumb", ldBreadcrumb);
+      upsertJsonLd(head, "ld-faq", ldFAQ);
+      head.querySelectorAll('script[id^="ld-service-"]').forEach((el) => el.remove());
+      if (ldServices) ldServices.forEach((s, i) => upsertJsonLd(head, `ld-service-${i}`, s));
+    } catch { /* noop */ }
+  }, [title, description, canonicalHref, homeHref, faviconSvg, favicon32, favicon16, appleIcon, manifestUrl, ldLocal, ldBreadcrumb, ldFAQ, ldServices]);
+
+  return null;
 }
 
 function BrandLogo({ className }) {
@@ -365,13 +244,15 @@ function Navbar({ page, goTo }) {
 
         <div className="hidden items-center gap-2 md:flex">
           {NAV_ITEMS.map((item) => (
-            <button
+            <a
               key={item.key}
-              onClick={() => goTo(item.key)}
+              href={withBase(META_BY_PAGE[item.key].path)}
+              onClick={(e) => handleNavClick(e, () => goTo(item.key))}
+              aria-current={page === item.key ? "page" : undefined}
               className={`cursor-pointer rounded-xl px-3 py-2 text-sm transition-colors hover:text-neutral-900 ${page === item.key ? "text-neutral-900" : "text-neutral-600"}`}
             >
               {item.label}
-            </button>
+            </a>
           ))}
           <a href={COMPANY.facebook} target="_blank" rel="noreferrer" title="Facebook" className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50">
             <Facebook className="h-5 w-5" />
@@ -409,13 +290,15 @@ function Navbar({ page, goTo }) {
             <div className="mx-auto max-w-7xl px-4 py-3">
               <div className="flex flex-col gap-1">
                 {NAV_ITEMS.map((item) => (
-                  <button
+                  <a
                     key={item.key}
-                    onClick={() => { setOpen(false); goTo(item.key); }}
+                    href={withBase(META_BY_PAGE[item.key].path)}
+                    onClick={(e) => handleNavClick(e, () => { setOpen(false); goTo(item.key); })}
+                    aria-current={page === item.key ? "page" : undefined}
                     className={`w-full cursor-pointer rounded-lg px-3 py-2 text-left text-base ${page === item.key ? "text-neutral-900" : "text-neutral-700"} hover:text-neutral-900`}
                   >
                     {item.label}
-                  </button>
+                  </a>
                 ))}
               </div>
               <div className="mt-3 flex items-center gap-2">
@@ -472,27 +355,7 @@ function LogosMarquee() {
           <div className="mb-4 text-center text-xs uppercase tracking-widest text-neutral-600">EMPRESAS QUE CONFÍAN EN NUESTRO TRABAJO</div>
         </Reveal>
 
-        <div className="sm:hidden -mx-4 px-4">
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent" />
-            <div className="no-scrollbar overflow-x-auto snap-x snap-mandatory">
-              <div className="flex gap-4 pr-4">
-                {CLIENT_LOGOS.map((item, i) => (
-                  <div key={i} className="logo-item-mobile snap-center flex min-w-[220px] items-center justify-center rounded-xl border border-neutral-200 bg-white px-6 py-4">
-                    {item.url ? (
-                      <img src={item.url} alt={item.name} className="logo-img-mobile h-12 w-auto object-contain opacity-90" loading="lazy" decoding="async" width="220" height="48" />
-                    ) : (
-                      <span className="text-sm text-neutral-700">{item.name}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative hidden overflow-hidden sm:block">
+        <div className="relative overflow-hidden">
           <div className="animate-marquee flex items-center gap-6 whitespace-nowrap">
             {duplicated.map((item, i) => (
               <div key={i} className="logo-item-desktop group flex h-24 min-w-[320px] items-center justify-center rounded-xl border border-neutral-200 bg-white px-10">
@@ -510,12 +373,13 @@ function LogosMarquee() {
       <style>{`
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-33.333%); } }
         .animate-marquee { animation: marquee var(--marquee-duration,30s) linear infinite; will-change: transform; }
-        .logo-img-desktop, .logo-img-mobile { filter: grayscale(1) contrast(1) brightness(0.6) drop-shadow(0 0 1px rgba(0,0,0,0.18)); transform: translateZ(0); transition: filter .2s ease, opacity .2s ease; }
+        .logo-img-desktop { filter: grayscale(1) contrast(1) brightness(0.6) drop-shadow(0 0 1px rgba(0,0,0,0.18)); transform: translateZ(0); transition: filter .2s ease, opacity .2s ease; }
         .logo-item-desktop:hover .logo-img-desktop { filter: none; }
-        @media (max-width: 640px) { :root { --marquee-duration: 40s; } .logo-img-mobile { filter: grayscale(1) brightness(0.65); } }
+        @media (max-width: 640px) {
+          .animate-marquee { --marquee-duration: 45s; }
+          .logo-img-desktop { filter: none; }
+        }
         @media (prefers-reduced-motion: reduce) { .animate-marquee { animation-duration: 56s; } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 1000px; }
       `}</style>
     </section>
@@ -568,7 +432,7 @@ function FAQSection({ full = false, goTo }) {
   return (
     <section className="py-16">
       <div className="mx-auto max-w-4xl px-4">
-        <Reveal><h3 className="mb-6 text-xl font-bold text-neutral-900">Preguntas frecuentes</h3></Reveal>
+        {!full && <Reveal><h3 className="mb-6 text-xl font-bold text-neutral-900">Preguntas frecuentes</h3></Reveal>}
         <div className="flex flex-col gap-3">
           {FAQS.map((f, i) => (
             <AccordionItem key={i} q={f.q} a={f.a} />
@@ -598,7 +462,7 @@ function Footer({ goTo }) {
           <Reveal><div className="mb-3 text-sm font-semibold text-neutral-900">Mapa del sitio</div></Reveal>
           <ul className="space-y-2 text-neutral-700">
             {NAV_ITEMS.map((i) => (
-              <li key={i.key}><button onClick={() => goTo(i.key)} className="cursor-pointer hover:text-neutral-900">{i.label}</button></li>
+              <li key={i.key}><a href={withBase(META_BY_PAGE[i.key].path)} onClick={(e) => handleNavClick(e, () => goTo(i.key))} className="cursor-pointer hover:text-neutral-900">{i.label}</a></li>
             ))}
           </ul>
         </div>
@@ -628,7 +492,7 @@ function HistoriaPage() {
   return (
     <main>
       <section className="mx-auto max-w-5xl px-4 pt-28">
-        <Reveal><h2 className="text-3xl font-bold text-neutral-900">Nuestra historia</h2></Reveal>
+        <Reveal><h1 className="text-3xl font-bold text-neutral-900">Nuestra historia</h1></Reveal>
         <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Cada hito refleja nuestro compromiso con la excelencia y la confianza de nuestros clientes en Ecuador.</p></Reveal>
       </section>
       <section className="cv-auto mx-auto max-w-5xl px-4 py-12">
@@ -665,7 +529,7 @@ function ServiciosPage({ goTo }) {
   return (
     <main className="pt-28">
       <section className="mx-auto max-w-6xl px-4">
-        <Reveal><h2 className="text-3xl font-bold text-neutral-900">Servicios</h2></Reveal>
+        <Reveal><h1 className="text-3xl font-bold text-neutral-900">Servicios</h1></Reveal>
         <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Soluciones integrales para empresas, comercios y residencias, con estándares de calidad y seguridad.</p></Reveal>
       </section>
       <section className="cv-auto mx-auto max-w-6xl px-4 py-10">
@@ -729,7 +593,7 @@ function ContactoPage() {
       setPhone("");
       setMessage("");
       formRef.current?.reset();
-    } catch (e) {
+    } catch {
       const mail = `mailto:${COMPANY.email}?subject=${encodeURIComponent("Nueva consulta web – Manos a la Obra")}&body=${encodeURIComponent(`Nombre: ${name}\nEmpresa: ${company}\nEmail: ${email}\nTeléfono: ${phone}\n\nMensaje:\n${message}`)}`;
       window.location.href = mail;
       setErr("No se pudo enviar automáticamente. Abrimos tu correo para enviar el mensaje manualmente.");
@@ -743,7 +607,7 @@ function ContactoPage() {
   return (
     <main className="pt-28" id="contacto">
       <section className="mx-auto max-w-6xl px-4">
-        <Reveal><h2 className="text-3xl font-bold text-neutral-900">Contacto</h2></Reveal>
+        <Reveal><h1 className="text-3xl font-bold text-neutral-900">Contacto</h1></Reveal>
         <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Cuéntanos sobre tu proyecto. Te responderemos a la brevedad.</p></Reveal>
       </section>
 
@@ -797,7 +661,7 @@ function FAQPage({ goTo }) {
   return (
     <main className="pt-28">
       <section className="mx-auto max-w-5xl px-4">
-        <Reveal><h2 className="text-3xl font-bold text-neutral-900">Preguntas frecuentes</h2></Reveal>
+        <Reveal><h1 className="text-3xl font-bold text-neutral-900">Preguntas frecuentes</h1></Reveal>
         <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Todo lo que necesitas saber sobre nuestros servicios y procesos.</p></Reveal>
       </section>
       <FAQSection full goTo={goTo} />
@@ -835,8 +699,12 @@ function ServiciosCTA({ goTo }) {
   );
 }
 
-export default function App() {
-  const [page, setPage] = useState("inicio");
+export default function App({ initialPage } = {}) {
+  const [page, setPage] = useState(() => {
+    if (initialPage && META_BY_PAGE[initialPage]) return initialPage;
+    if (typeof window !== "undefined") return pageFromPathname(window.location.pathname);
+    return "inicio";
+  });
   useDarkMode();
   useScrollTopOnRoute(page);
 
@@ -846,7 +714,22 @@ export default function App() {
     onLCP(console.log);
   }, []);
 
-  const goTo = (key) => setPage(key);
+  useEffect(() => {
+    const onPopState = () => setPage(pageFromPathname(window.location.pathname));
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const goTo = (key) => {
+    const target = META_BY_PAGE[key] ? key : "inicio";
+    if (typeof window !== "undefined") {
+      const path = withBase(META_BY_PAGE[target].path);
+      if (normalizePath(window.location.pathname) !== normalizePath(path)) {
+        window.history.pushState({ page: target }, "", path);
+      }
+    }
+    setPage(target);
+  };
   const meta = META_BY_PAGE[page] || META_BY_PAGE.inicio;
 
   return (

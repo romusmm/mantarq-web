@@ -10,7 +10,7 @@ try {
     const d = JSON.parse(el.textContent);
     initialPageFromData = d?.initialPage;
   }
-} catch {}
+} catch { /* noop */ }
 
 createRoot(document.getElementById("root")).render(
   <App initialPage={initialPageFromData} />
