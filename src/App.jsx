@@ -376,7 +376,7 @@ function LogosMarquee() {
         .logo-img-desktop { filter: grayscale(1) contrast(1) brightness(0.6) drop-shadow(0 0 1px rgba(0,0,0,0.18)); transform: translateZ(0); transition: filter .2s ease, opacity .2s ease; }
         .logo-item-desktop:hover .logo-img-desktop { filter: none; }
         @media (max-width: 640px) {
-          .animate-marquee { --marquee-duration: 45s; }
+          .animate-marquee { --marquee-duration: 18s; }
           .logo-img-desktop { filter: none; }
         }
         @media (prefers-reduced-motion: reduce) { .animate-marquee { animation-duration: 56s; } }
