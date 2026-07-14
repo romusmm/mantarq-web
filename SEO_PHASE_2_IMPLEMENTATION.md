@@ -114,3 +114,77 @@ Tras aplicar la corrección del punto 1, se volvió a ejecutar `npm run build` +
 - Considerar recolectar reseñas/testimonios reales con consentimiento explícito para reforzar confianza sin usar `AggregateRating`/`Review` inventados.
 
 No se hizo commit ni push en esta fase.
+
+---
+
+## 21. Ronda de corrección (revisión post-implementación, 2026-07-14)
+
+Tras la implementación inicial de Fase 2, el propietario pidió una revisión y corrección explícita de 12 puntos sobre el código ya escrito (sin commit/push hasta entonces). Este apartado registra qué se encontró y qué se corrigió.
+
+### Contexto empresarial confirmado
+
+Se diferenciaron explícitamente tres valores en `COMPANY` (`src/site-data.js`): `publicName: "Manos a la Obra, MANTARQ S.A.S."`, `brandName: "Manos a la Obra"`, `legalName: "MANTARQ S.A.S."`. Se agregaron campos explícitos de ubicación: `officeCity: "Cuenca"`, `officeRegion: "Azuay"`, `officeCountry: "EC"`, `officeDisplayLocation: "Cuenca, Ecuador"`, `serviceArea: "Ecuador"` — reemplazando el campo genérico `city` anterior. Esto permite distinguir en todo el código entre **oficina física** (Cuenca) y **cobertura de proyectos** (todo Ecuador, incluido Guayaquil vía desplazamiento de equipos, no oficina). Se ajustaron `META_BY_PAGE`, la frase de marca en Home/Footer, y la respuesta de FAQ sobre ciudades atendidas para reflejar esta distinción.
+
+### 1. FAQ en HTML prerenderizado
+
+`AccordionItem` usaba `useState` + `AnimatePresence`/`motion.div`, montando la respuesta solo cuando `open===true` — invisible para crawlers y para el HTML estático. Reemplazado por `<details>`/`<summary>` nativo (sin JS de por medio): la respuesta ahora vive siempre en el DOM (oculta por el navegador vía el atributo `open`, no por React), visible en el HTML crudo. El icono `ChevronDown` rota vía CSS (`group-open:rotate-180`, sin estado). Verificado: `dist/index.html` y `dist/faq/index.html` contienen literalmente el texto de las 5 respuestas.
+
+### 2. Scroll simplificado
+
+`useScrollTopOnRoute` tenía 2 `setTimeout` + 2 `requestAnimationFrame` redundantes. Se simplificó a una sola llamada — pero con una corrección importante descubierta en el proceso: el sitio define `scroll-behavior: smooth` globalmente (`src/index.css`), y `behavior: "auto"` **respeta** esa preferencia (anima el salto) en vez de forzarlo instantáneo; solo `behavior: "instant"` lo sobreescribe. Además, se detectó que un `scrollTo` instantáneo **síncrono** en el mismo ciclo de commit interfiere con la medición de salida de `AnimatePresence` (ver hallazgo de pruebas más abajo), por lo que la llamada se difiere un frame vía `requestAnimationFrame`. Resultado: una sola llamada real, comportamiento instantáneo correcto, sin los timers redundantes.
+
+### 3–5. Ubicación, nombre público y datos estructurados
+
+`buildPageGraph`/`buildOrganizationNode`/`buildWebsiteNode`/`buildServiceNodes` (`src/site-data.js`) actualizados:
+- Organización: `name: COMPANY.publicName` ("Manos a la Obra, MANTARQ S.A.S."), `legalName`, `alternateName: [brandName, "MANTARQ"]`, `logo: ICON_URL`, `address` con `officeCity`/`officeRegion`/`officeCountry`, `areaServed: [serviceArea, officeCity, "Guayaquil"]`, `sameAs` ahora incluye LinkedIn (antes solo Facebook/Instagram).
+- `WebSite`: `name: brandName`, `alternateName: "MANTARQ"` (intencionalmente igual al de la organización — identifican alternativas de nombres de entidades distintas).
+- `Service`: cada nodo ahora tiene `@id` estable (`{canonical}#service-{slug}`), `url` apuntando a `/servicios/`, y `provider: {"@id": orgId}` (ya corregido en la ronda anterior).
+- Verificado en `dist/index.html`: el `@graph` de Home contiene exactamente estos campos (ver comando de verificación en la sección de pruebas).
+
+### 6. Botones anidados en enlaces
+
+Se encontraron 5 instancias del patrón `<a href=...><Button>...</Button></a>` (WhatsApp en Navbar desktop/móvil, Hero, Servicios "Solicitar cotización", Contacto "WhatsApp directo") — botón real anidado dentro de un enlace real, HTML inválido y confuso para lectores de pantalla. Todas convertidas a `<Button as="a" href=... target="_blank" rel="noreferrer">` (el componente `Button` ya soportaba `as` para renderizar como cualquier etiqueta). Verificado con una búsqueda de patrón `<a...><button` sobre los 5 HTML generados: cero coincidencias.
+
+### 7. Formulario de contacto
+
+Cada campo (`nombre`, `email`, `empresa`, `teléfono`, `mensaje`) recibió `id` único, `<label htmlFor>` asociado, y `autoComplete` (`name`, `email`, `organization`, `tel` respectivamente); el campo teléfono además pasó a `type="tel"`. El mensaje de éxito usa `role="status" aria-live="polite"`; el de error, `role="alert"`. Se conservó el envío vía FormSubmit y el fallback por `mailto:`.
+
+### 8. Carrusel de logos
+
+La copia duplicada (usada solo para el loop visual continuo) ahora lleva `aria-hidden="true"` en cada tarjeta y `alt=""` en su imagen — evita que lectores de pantalla anuncien los mismos 8 logos dos veces. La primera copia conserva su `alt` factual (`"Logo de {nombre}"`). Para `prefers-reduced-motion: reduce`, la animación se detiene por completo (`animation: none`, antes solo se alargaba a 56s).
+
+### 9. Textos alternativos
+
+El logo principal (`BrandLogo`) cambió de `alt="Logo"` a `alt={COMPANY.publicName}` ("Manos a la Obra, MANTARQ S.A.S.").
+
+### 10. Copy empresarial
+
+Se revisaron y suavizaron expresiones absolutas/no verificables: "Consolidados como referente de mantenimiento empresarial en Ecuador" → "Seguimos brindando servicios de mantenimiento empresarial en Ecuador"; "compromiso con la excelencia" → "compromiso con la calidad"; se quitó "cumplimiento normativo" y "acabados premium" (Servicios/Pintura Integral) por afirmaciones no verificables desde el contenido disponible; "Respuesta rápida garantizada" → "Te responderemos a la brevedad". `META_BY_PAGE` y la respuesta de FAQ sobre ciudades se reescribieron para distinguir oficina (Cuenca) de cobertura de proyectos (Guayaquil y todo el país, vía desplazamiento de equipos).
+
+### 11. Limpieza de código
+
+- Eliminada la constante `TIMELINE` (y su único consumidor, `CURRENT_YEAR` a nivel de módulo) — estaba duplicada por el array `STEPS` local de `HistoriaPage` y no se usaba en ningún otro lado.
+- Medición de Core Web Vitals (`onCLS`/`onINP`/`onLCP`) ahora solo se ejecuta si `import.meta.env.DEV` es verdadero — no corre en producción.
+- Se instaló `eslint-plugin-react` (devDependency) y se habilitó únicamente la regla `react/jsx-uses-vars` (sin adoptar el ruleset `recommended` completo, para no introducir reglas nuevas no solicitadas). Esto resuelve el falso positivo de `no-unused-vars` sobre `motion` y `As`, que solo se usaban como nombre de etiqueta JSX (`<motion.nav>`, `<As>`) — un caso que `no-unused-vars` no reconoce sin esta regla.
+- `npm run lint` termina con **0 errores** (antes: 2 falsos positivos documentados).
+
+### Hallazgo de pruebas: interferencia entre scroll instantáneo síncrono y `AnimatePresence`
+
+Durante la verificación de navegación se detectó que un `window.scrollTo(..., {behavior: "instant"})` ejecutado de forma síncrona en el mismo ciclo de render que un cambio de página podía dejar la transición de `AnimatePresence` (`mode="wait"`) sin completar — el título/URL/estado de navegación se actualizaban correctamente pero el contenido visible de la página no cambiaba. Se corrigió difiriendo el scroll un frame vía `requestAnimationFrame` (ver punto 2), lo que resolvió el caso de una sola transición de forma consistente.
+
+Sin embargo, se confirmó por separado (comparando contra el código ya mergeado de la fase anterior, sin ninguno de los cambios de esta sesión) que la combinación `AnimatePresence mode="wait"` + navegaciones repetidas ya presentaba comportamiento inconsistente **antes** de esta sesión también, y que se reproduce de forma más marcada en el navegador automatizado usado para las pruebas porque **la pestaña de prueba corre en segundo plano** (`document.hidden === true`, `document.hasFocus() === false`), condición en la que los navegadores pausan/throttlean `requestAnimationFrame` y las animaciones CSS — justamente el mecanismo del que depende `framer-motion` para detectar que una animación de salida terminó. No se pudo confirmar si esto afecta a usuarios reales (con la pestaña visible y enfocada) fuera de este entorno de prueba automatizado. Se documenta aquí de forma transparente en vez de reportarse como resuelto sin evidencia sólida; no estaba en el alcance de los 12 puntos solicitados y no se continuó investigando más allá de aislar la causa. Recomendación para Fase 3: probar la navegación manualmente en un navegador real (pestaña visible) y, si el problema persiste, considerar reemplazar `mode="wait"` por `mode="sync"` o quitar la animación de transición de página.
+
+### Pruebas ejecutadas en esta ronda
+
+- `npm run build`: éxito, 5 rutas prerenderizadas.
+- `npm run lint`: **0 errores** (ver punto 11).
+- Verificación estática sobre los 5 HTML generados: 1 `<h1>` por página, título/description únicos, canonical correcto, **cero** patrones `<a><button` anidados, `<details>` con las respuestas de FAQ presentes en `dist/index.html` y `dist/faq/index.html`, formulario con `id`/`label for` asociados correctamente.
+- JSON-LD de Home verificado con Node: `name` público completo, `legalName`, `alternateName` (organización y sitio), oficina Cuenca/Azuay/EC, `areaServed` con Ecuador/Cuenca/Guayaquil, `sameAs` con Facebook/Instagram/LinkedIn, `logo`.
+- `node scripts/generate-sitemap.mjs`: sigue listando exactamente las 5 URLs.
+- Navegación SPA (click → cambio de página) verificada exitosamente de forma aislada (recarga limpia + click único + espera); la limitación de pruebas con múltiples navegaciones rápidas en el mismo entorno automatizado se documenta arriba.
+
+### Archivos modificados en esta ronda
+
+`src/site-data.js`, `src/App.jsx`, `prerender.jsx`, `eslint.config.js`, `package.json`/`package-lock.json` (nueva devDependency `eslint-plugin-react`).
+
+No se hizo commit ni push en esta ronda de corrección.

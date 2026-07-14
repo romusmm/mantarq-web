@@ -16,16 +16,21 @@ export const BRAND = {
 };
 
 export const COMPANY = {
-  legalName: "MANTARQ S.A.S.",
+  publicName: "Manos a la Obra, MANTARQ S.A.S.",
   brandName: "Manos a la Obra",
-  city: "Cuenca, Ecuador",
+  legalName: "MANTARQ S.A.S.",
+  officeCity: "Cuenca",
+  officeRegion: "Azuay",
+  officeCountry: "EC",
+  officeDisplayLocation: "Cuenca, Ecuador",
+  serviceArea: "Ecuador",
   email: "info@mantarq.com",
-  phone: "+593 99 624 2213",
-  phoneHref: "593996242213",
+  phone: "+593 91 668 8146",
+  phoneHref: "593916688146",
   address: "Fray Vicente Solano y Avenida del Estado. Edificio CICA, Oficina 520",
   facebook: "https://www.facebook.com/Manosalaobra.Cuenca",
   instagram: "https://www.instagram.com/manosalaobraecuador",
-  linkedin: "https://www.linkedin.com/company/manos-a-la-obra-mantarq-s-a-s/",
+  linkedin: "https://www.linkedin.com/company/manos-a-la-obra-mantarq/",
   mapsUrl: "https://www.google.com/maps/place/Manos+a+la+Obra+MANTARQ+SAS/@-2.9060613,-79.0094591,17z/data=!3m1!4b1!4m6!3m5!1s0x91cd19006167e407:0x8c14fa3327f3b7d!8m2!3d-2.9060613!4d-79.0068842!16s%2Fg%2F11vyj3pb6c?entry=ttu&g_ep=EgoyMDI1MDgxMy4wIKXMDSoASAFQAw%3D%3D",
   mapsLat: -2.9060613,
   mapsLng: -79.0068842,
@@ -33,28 +38,28 @@ export const COMPANY = {
 
 export const META_BY_PAGE = {
   inicio: {
-    title: "Mantenimiento Empresarial en Ecuador | Manos a la Obra – MANTARQ | Cuenca · Guayaquil",
-    desc: "Empresa de mantenimiento empresarial en Ecuador. Cuenca, Guayaquil y cobertura nacional. Mantenimiento preventivo, eléctrico, pintura y más.",
+    title: "Mantenimiento Empresarial en Ecuador | Manos a la Obra – MANTARQ | Cuenca",
+    desc: "Oficina en Cuenca y proyectos en todo Ecuador, incluido Guayaquil. Mantenimiento preventivo, eléctrico, pintura y más.",
     path: "/",
   },
   historia: {
     title: "Nuestra Historia | Empresa de Mantenimiento desde 2014 | Manos a la Obra Ecuador",
-    desc: "Desde 2014 en Cuenca, Ecuador, Manos a la Obra es referente en mantenimiento empresarial. Expandidos a Guayaquil y cobertura nacional.",
+    desc: "Desde 2014 en Cuenca, Ecuador. Manos a la Obra amplía su cobertura de proyectos a Guayaquil y otras ciudades del país.",
     path: "/historia/",
   },
   servicios: {
     title: "Servicios de Mantenimiento Industrial y Comercial en Ecuador | Manos a la Obra",
-    desc: "Servicios de mantenimiento industrial y comercial en Ecuador: gypsum, eléctrico, pintura, aluminio y cubiertas. Cuenca, Guayaquil y todo el país.",
+    desc: "Servicios de mantenimiento industrial y comercial: gypsum, eléctrico, pintura, aluminio y cubiertas. Oficina en Cuenca, proyectos en Guayaquil y todo el país.",
     path: "/servicios/",
   },
   faq: {
     title: "Preguntas Frecuentes | Mantenimiento Empresarial en Ecuador | Manos a la Obra",
-    desc: "Preguntas frecuentes sobre mantenimiento empresarial en Ecuador. Cobertura en Cuenca, Guayaquil y todo el país. Más de 10 años de experiencia.",
+    desc: "Preguntas frecuentes sobre mantenimiento empresarial en Ecuador. Oficina en Cuenca, proyectos en Guayaquil y todo el país.",
     path: "/faq/",
   },
   contacto: {
-    title: "Solicita una Propuesta de Mantenimiento | Manos a la Obra – Cuenca y Guayaquil",
-    desc: "Solicita una propuesta de mantenimiento empresarial sin compromiso. Atendemos en Cuenca, Guayaquil y todo Ecuador. Respuesta rápida garantizada.",
+    title: "Solicita una Propuesta de Mantenimiento | Manos a la Obra – MANTARQ",
+    desc: "Solicita una propuesta de mantenimiento empresarial sin compromiso. Atendemos en Cuenca, Guayaquil y todo Ecuador. Te responderemos a la brevedad.",
     path: "/contacto/",
   },
 };
@@ -89,7 +94,7 @@ export function pageFromPathname(pathname) {
 export const SERVICES = [
   { slug: "paredes-gypsum", icon: Building2, name: "Paredes Gypsum", desc: "Instalación profesional de tabiques, cielos rasos y soluciones acústicas en gypsum para empresas en Ecuador." },
   { slug: "sistema-electrico", icon: PlugZap, name: "Sistema Eléctrico", desc: "Mantenimiento y cableado seguro, tableros, canalizaciones y luminarias para entornos industriales y comerciales en Ecuador." },
-  { slug: "pintura-integral", icon: Paintbrush, name: "Pintura Integral", desc: "Acabados premium para instalaciones comerciales e industriales: interiores, exteriores, epóxicos y señalética." },
+  { slug: "pintura-integral", icon: Paintbrush, name: "Pintura Integral", desc: "Acabados de calidad para instalaciones comerciales e industriales: interiores, exteriores, epóxicos y señalética." },
   { slug: "puertas-aluminio", icon: DoorOpen, name: "Puertas de Aluminio", desc: "Fabricación e instalación de puertas, ventanería y fachadas ligeras para empresas en Ecuador." },
   { slug: "cubiertas-metalicas", icon: Factory, name: "Cubiertas Metálicas", desc: "Estructuras y cubiertas metálicas seguras, durables y estéticas para instalaciones industriales en Ecuador." },
 ];
@@ -99,7 +104,7 @@ export const FAQS = [
   { q: "¿Solo realizan trabajos de mantenimiento?", a: "Si bien somos especialistas en mantenimiento, también ofrecemos servicios de construcción, remodelación y reparación." },
   { q: "¿Trabajan fuera del país?", a: "Actualmente no ofrecemos servicios fuera de Ecuador." },
   { q: "¿Tienen el equipo necesario para los trabajos?", a: "Contamos con el equipo técnico necesario y con más de 10 años de experiencia." },
-  { q: "¿En qué ciudades brindan servicios?", a: "Brindamos cobertura a nivel nacional en Ecuador; coordinamos equipos y logística según el alcance de cada proyecto." },
+  { q: "¿En qué ciudades brindan servicios?", a: "Nuestra oficina está en Cuenca y coordinamos equipos según la ubicación y alcance de cada proyecto; hemos ampliado nuestra cobertura a Guayaquil y otras ciudades del país." },
 ];
 
 export const ICON_URL = "https://i.ibb.co/VYKcrNBR/mantarqlogopng.png";
@@ -114,34 +119,34 @@ const PAGE_NAMES = {
 
 // Nodo completo de la organización. Se emite solo una vez, en Home; el resto
 // de rutas la referencian por "@id" (ver buildPageGraph) para no duplicar
-// sus datos en cada página.
+// sus datos en cada página. La oficina física está en Cuenca; la cobertura
+// de proyectos (incluida Guayaquil) se representa vía `areaServed`, no como
+// una segunda oficina.
 function buildOrganizationNode(c, id, url) {
-  const parts = (c.city || "").split(",").map((s) => s.trim());
-  const locality = parts[0] || "Cuenca";
-  const region = parts[1] || "Azuay";
   return {
     "@type": "HomeAndConstructionBusiness",
     "@id": id,
-    name: c.brandName,
+    name: c.publicName,
     legalName: c.legalName,
-    alternateName: "MANTARQ",
+    alternateName: [c.brandName, "MANTARQ"],
     url,
+    logo: ICON_URL,
     telephone: c.phoneHref ? "+" + c.phoneHref : c.phone,
     email: c.email,
     address: {
       "@type": "PostalAddress",
       streetAddress: c.address,
-      addressLocality: locality,
-      addressRegion: region,
-      addressCountry: "EC",
+      addressLocality: c.officeCity,
+      addressRegion: c.officeRegion,
+      addressCountry: c.officeCountry,
     },
     geo: {
       "@type": "GeoCoordinates",
       latitude: c.mapsLat,
       longitude: c.mapsLng,
     },
-    sameAs: [c.facebook, c.instagram].filter(Boolean),
-    areaServed: ["Cuenca", "Guayaquil", "Ecuador"],
+    sameAs: [c.facebook, c.instagram, c.linkedin].filter(Boolean),
+    areaServed: [c.serviceArea, c.officeCity, "Guayaquil"].filter(Boolean),
     hasMap: c.mapsUrl,
   };
 }
@@ -198,13 +203,15 @@ function buildFAQNode(faqs) {
   };
 }
 
-function buildServiceNodes(services, orgId) {
+function buildServiceNodes(services, orgId, canonical) {
   return services.map((s) => ({
     "@type": "Service",
+    "@id": `${canonical}#service-${s.slug}`,
     name: s.name,
     description: s.desc,
     provider: { "@id": orgId },
     areaServed: "Ecuador",
+    url: canonical,
   }));
 }
 
@@ -228,7 +235,7 @@ export function buildPageGraph({ page, canonical, home, title, company, faqs, se
     graph.push(buildWebPageNode({ id: pageId, url: canonical, name: title, websiteId, orgId, breadcrumbId }));
     graph.push(buildBreadcrumbNode(page, canonical, home, breadcrumbId));
     if (page === "faq") graph.push(buildFAQNode(faqs));
-    if (page === "servicios") graph.push(...buildServiceNodes(services, orgId));
+    if (page === "servicios") graph.push(...buildServiceNodes(services, orgId, canonical));
   }
 
   return { "@context": "https://schema.org", "@graph": graph.filter(Boolean) };

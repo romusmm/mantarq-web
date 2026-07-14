@@ -66,3 +66,34 @@
 1. Ver `SEO_PHASE_2_PLAN.md` para el plan completo aprobado (con las 3 rondas de corrección) y `SEO_PHASE_2_IMPLEMENTATION.md` para el registro final de qué se implementó.
 2. Antes de tocar nada nuevo: `npm run build`, `npm run lint`, `npm run preview` y repetir las comprobaciones de rutas/enlaces/JSON-LD descritas arriba.
 3. Para servicios individuales/proyectos/blog reales en el futuro, seguir `SEO_CONTENT_GAPS.md` / `PROJECT_CONTENT_TEMPLATE.md` / `BLOG_CONTENT_STRATEGY.md` respectivamente.
+
+## 2026-07-14 (continuación) — Ronda de corrección de la Fase 2 (12 puntos, sin commit)
+
+### Analizado
+- Revisión completa del código escrito en la Fase 2 contra 12 puntos de corrección pedidos: FAQ no estático, scroll con timers redundantes, `COMPANY` sin distinguir oficina/cobertura, nombre público incompleto en JSON-LD, datos estructurados incompletos, botones anidados en enlaces, formulario sin labels asociados, carrusel sin `aria-hidden`/reduced-motion, alt del logo genérico, copy con expresiones absolutas, código muerto (`TIMELINE`), y los 2 errores de lint pre-existentes que ya se habían dejado documentados en vez de corregidos.
+
+### Modificado
+- `src/site-data.js`: `COMPANY` con `publicName`/`officeCity`/`officeRegion`/`officeCountry`/`officeDisplayLocation`/`serviceArea` explícitos (reemplaza el campo `city` genérico); `META_BY_PAGE` y respuesta de FAQ sobre ciudades reescritas para distinguir oficina (Cuenca) de cobertura de proyectos (Guayaquil y país, por desplazamiento de equipos); `buildOrganizationNode` con `name` público completo, `alternateName` array, `logo`, `sameAs` con LinkedIn agregado, `areaServed` correcto; `Service` con `@id`/`url` propios.
+- `src/App.jsx`: `AccordionItem` reescrito con `<details>/<summary>` nativo (FAQ ahora en el HTML estático); `useScrollTopOnRoute` simplificado a una sola llamada `scrollTo` diferida un frame; 5 patrones `<a><Button></a>` convertidos a `Button as="a"`; formulario de contacto con `id`/`label htmlFor`/`autoComplete` por campo y `role="status"`/`role="alert"` en los mensajes; carrusel con `aria-hidden`/`alt=""` en la copia duplicada y animación detenida por completo en `prefers-reduced-motion`; alt del logo principal a nombre público completo; copy revisado (quitadas expresiones absolutas: "referente", "excelencia", "cumplimiento normativo", "acabados premium", "respuesta rápida garantizada"); eliminada la constante `TIMELINE` muerta; Web Vitals limitado a `import.meta.env.DEV`.
+- `eslint.config.js`: agregado `eslint-plugin-react` (solo la regla `jsx-uses-vars`) para que ESLint reconozca `motion`/`As` usados como etiqueta JSX — `npm run lint` ahora en 0 errores.
+- `SEO_PHASE_2_IMPLEMENTATION.md`: nueva sección 21 con el detalle completo de esta ronda.
+
+### Descubierto (hallazgo de pruebas, no parte de los 12 puntos)
+- Un `scrollTo` instantáneo síncrono en el mismo ciclo de render que un cambio de página interfería con la detección de fin de animación de `AnimatePresence` (`mode="wait"`), dejando la transición sin completar visualmente aunque el estado (URL/título) sí cambiaba. Corregido diferiendo el scroll un frame.
+- Al intentar verificar navegaciones múltiples seguidas, se detectó comportamiento inconsistente que **ya existía en el código mergeado antes de esta ronda** (confirmado comparando contra el commit previo). Se aisló la causa más probable: la pestaña de navegador usada para las pruebas automatizadas corre en segundo plano (`document.hidden === true`), condición en la que los navegadores pausan `requestAnimationFrame`, del que depende `framer-motion` para saber cuándo termina una animación de salida. No se pudo confirmar si afecta a usuarios reales con la pestaña visible. Documentado como riesgo conocido para Fase 3 en vez de reportarse como resuelto sin evidencia — no estaba en el alcance de los 12 puntos pedidos.
+
+### Verificación
+- `npm run build` + `npm run lint` (0 errores) tras cada bloque de cambios.
+- HTML estático de las 5 rutas: 1 H1, título/description únicos, canonical correcto, cero `<a><button` anidados, respuestas de FAQ presentes en `dist/index.html`/`dist/faq/index.html`, `id`/`label for` del formulario asociados correctamente.
+- JSON-LD de Home verificado con Node: nombre público, `legalName`, `alternateName` (organización y sitio), oficina Cuenca/Azuay/EC, `areaServed`, `sameAs` con las 3 redes, `logo`.
+- Sitemap regenerado: sigue con exactamente las 5 URLs.
+
+### Falta / decisiones pendientes
+- Igual que antes: imágenes en `i.ibb.co` sin migrar; servicios individuales/proyectos/blog bloqueados por falta de contenido real.
+- Nuevo: comportamiento de `AnimatePresence` en navegaciones rápidas repetidas sin confirmar en navegador real (ver hallazgo arriba) — recomendado probar manualmente antes de Fase 3.
+
+### Cómo continuar si se interrumpe la sesión
+1. Ver `SEO_PHASE_2_IMPLEMENTATION.md` sección 21 para el detalle completo de esta ronda de corrección.
+2. `npm run build` y `npm run lint` deben terminar sin errores (0, no solo los pre-existentes).
+3. Antes de dar por cerrado el tema de navegación, probar manualmente en un navegador real (pestaña visible/enfocada) el comportamiento de `AnimatePresence` con clics rápidos sucesivos entre páginas.
+4. No se ha hecho commit ni push de esta ronda — sigue pendiente de aprobación antes de confirmar en git.

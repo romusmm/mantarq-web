@@ -40,16 +40,6 @@ function handleNavClick(e, action) {
   action();
 }
 
-const CURRENT_YEAR = new Date().getFullYear();
-
-const TIMELINE = [
-  { year: "2014", text: "Inicio de Actividades en Cuenca, Ecuador." },
-  { year: "2015–2018", text: "Expansión de servicios a más provincias." },
-  { year: "2019", text: "Diversificación a remodelaciones y construcción." },
-  { year: "2022", text: "Implementación de procesos digitales y mejora operativa." },
-  { year: String(CURRENT_YEAR), text: "Actualmente seguimos brindando nuestros servicios." },
-];
-
 const CLIENT_LOGOS = [
   { name: "Grupo Ortiz (Cuenca)", url: "https://i.ibb.co/PvSHrjyC/gruporotizlogo.png" },
   { name: "Marcimex", url: "https://i.ibb.co/WvJ8pRf0/Marcimex-Logo.png", scale: 1.3 },
@@ -89,13 +79,16 @@ function useStickyNav() {
 function useScrollTopOnRoute(pageKey) {
   useEffect(() => {
     try { if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual"; } catch { /* noop */ }
-    const scrollNow = () => window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    scrollNow();
-    const t0 = setTimeout(scrollNow, 0);
-    const t1 = setTimeout(scrollNow, 100);
-    const r0 = requestAnimationFrame(scrollNow);
-    const r1 = requestAnimationFrame(() => setTimeout(scrollNow, 16));
-    return () => { clearTimeout(t0); clearTimeout(t1); cancelAnimationFrame(r0); cancelAnimationFrame(r1); };
+    // Se difiere un frame (en vez de saltar de forma síncrona en el mismo
+    // commit) porque un scroll instantáneo síncrono interfiere con la
+    // medición de salida de framer-motion's AnimatePresence y deja la
+    // transición de página congelada. `behavior: "instant"` sigue siendo
+    // necesario para saltar sin animar pese al `scroll-behavior: smooth`
+    // global (src/index.css).
+    const id = requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    });
+    return () => cancelAnimationFrame(id);
   }, [pageKey]);
 }
 
@@ -169,7 +162,7 @@ function SEO({ page, title, description }) {
       if (canonicalHref) upsertHeadEl(head, 'meta[property="og:url"]', "meta", { property: "og:url", content: canonicalHref });
       upsertHeadEl(head, 'meta[property="og:type"]', "meta", { property: "og:type", content: "website" });
       upsertHeadEl(head, 'meta[property="og:image"]', "meta", { property: "og:image", content: ICON_URL });
-      upsertHeadEl(head, 'meta[property="og:site_name"]', "meta", { property: "og:site_name", content: "Manos a la Obra – MANTARQ" });
+      upsertHeadEl(head, 'meta[property="og:site_name"]', "meta", { property: "og:site_name", content: COMPANY.brandName });
       upsertHeadEl(head, 'meta[property="og:locale"]', "meta", { property: "og:locale", content: "es_EC" });
       upsertHeadEl(head, 'meta[name="twitter:card"]', "meta", { name: "twitter:card", content: "summary_large_image" });
 
@@ -200,7 +193,7 @@ function BrandLogo({ className }) {
       />
       <img
         src={ICON_URL}
-        alt="Logo"
+        alt={COMPANY.publicName}
         className="h-full w-full object-contain"
         style={{ filter: "drop-shadow(0 10px 20px rgba(0,0,0,.35)) drop-shadow(0 6px 18px rgba(8,84,156,.35))" }}
       />
@@ -261,9 +254,7 @@ function Navbar({ page, goTo }) {
           <a href={COMPANY.linkedin} target="_blank" rel="noreferrer" title="LinkedIn" className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50">
             <Linkedin className="h-5 w-5" />
           </a>
-          <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer">
-            <Button className="border border-neutral-200 bg-[var(--brand-primary)] text-white hover:translate-y-[-1px]" style={{ "--brand-primary": BRAND.primary }}>Solicita tu servicio</Button>
-          </a>
+          <Button as="a" href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer" className="border border-neutral-200 bg-[var(--brand-primary)] text-white hover:translate-y-[-1px]" style={{ "--brand-primary": BRAND.primary }}>Solicita tu servicio</Button>
         </div>
 
         <button
@@ -309,9 +300,7 @@ function Navbar({ page, goTo }) {
                 <a href={COMPANY.linkedin} target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-xl border border-neutral-200 bg-white text-neutral-700" title="LinkedIn">
                   <Linkedin className="h-5 w-5" />
                 </a>
-                <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer">
-                  <Button className="border border-neutral-200 bg-[var(--brand-primary)] text-white" style={{ "--brand-primary": BRAND.primary }}>Solicita tu servicio</Button>
-                </a>
+                <Button as="a" href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer" className="border border-neutral-200 bg-[var(--brand-primary)] text-white" style={{ "--brand-primary": BRAND.primary }}>Solicita tu servicio</Button>
               </div>
             </div>
           </motion.div>
@@ -337,13 +326,13 @@ function Hero({ goTo }) {
         </Reveal>
         <Reveal delay={0.07}>
           <p className="mt-4 max-w-3xl text-neutral-700">
-            Manos a la Obra es el nombre comercial de {COMPANY.legalName}, activa en Cuenca desde 2014 y con cobertura a nivel nacional en Ecuador.{" "}
+            {COMPANY.brandName} es el nombre comercial de {COMPANY.legalName}. Nuestra oficina está en {COMPANY.officeDisplayLocation} desde 2014 y coordinamos equipos para proyectos en todo el país.{" "}
             <a href={withBase(META_BY_PAGE.historia.path)} onClick={(e) => handleNavClick(e, () => goTo("historia"))} className="cursor-pointer underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900">Conoce nuestra historia</a>.
           </p>
         </Reveal>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button as="a" href={withBase(META_BY_PAGE.servicios.path)} onClick={(e) => handleNavClick(e, () => goTo("servicios"))} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Conócenos</Button>
-          <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer"><Button className="border border-neutral-200 text-neutral-900 hover:translate-y-[-1px]" style={{ background: BRAND.accent }}>Solicita tu servicio</Button></a>
+          <Button as="a" href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer" className="border border-neutral-200 text-neutral-900 hover:translate-y-[-1px]" style={{ background: BRAND.accent }}>Solicita tu servicio</Button>
         </div>
       </div>
     </section>
@@ -383,15 +372,18 @@ function LogosMarquee() {
 
         <div className="relative overflow-hidden">
           <div ref={trackRef} className="animate-marquee flex items-center gap-6 whitespace-nowrap">
-            {duplicated.map((item, i) => (
-              <div key={i} className="logo-item-desktop group flex h-24 min-w-[320px] items-center justify-center rounded-xl border border-neutral-200 bg-white px-10">
-                {item.url ? (
-                  <img src={item.url} alt={`Logo de ${item.name}`} className="logo-img-desktop h-16 w-auto opacity-90 transition-all duration-200 group-hover:opacity-100" style={item.scale ? { transform: `translateZ(0) scale(${item.scale})` } : undefined} loading="lazy" decoding="async" width="320" height="64" />
-                ) : (
-                  <span className="text-sm text-neutral-700">{item.name}</span>
-                )}
-              </div>
-            ))}
+            {duplicated.map((item, i) => {
+              const isDuplicate = i >= CLIENT_LOGOS.length;
+              return (
+                <div key={i} className="logo-item-desktop group flex h-24 min-w-[320px] items-center justify-center rounded-xl border border-neutral-200 bg-white px-10" aria-hidden={isDuplicate ? "true" : undefined}>
+                  {item.url ? (
+                    <img src={item.url} alt={isDuplicate ? "" : `Logo de ${item.name}`} className="logo-img-desktop h-16 w-auto opacity-90 transition-all duration-200 group-hover:opacity-100" style={item.scale ? { transform: `translateZ(0) scale(${item.scale})` } : undefined} loading="lazy" decoding="async" width="320" height="64" />
+                  ) : (
+                    <span className="text-sm text-neutral-700">{item.name}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -405,7 +397,7 @@ function LogosMarquee() {
           .animate-marquee { --marquee-duration: 30s; }
           .logo-img-desktop { filter: none; }
         }
-        @media (prefers-reduced-motion: reduce) { .animate-marquee { animation-duration: 56s; } }
+        @media (prefers-reduced-motion: reduce) { .animate-marquee { animation: none; } }
         .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 1000px; }
       `}</style>
     </section>
@@ -438,19 +430,14 @@ function QuickContact() {
 }
 
 function AccordionItem({ q, a }) {
-  const [open, setOpen] = useState(false);
   return (
-    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
-      <button onClick={() => setOpen((o) => !o)} className="flex w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-left">
+    <details className="group overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left [&::-webkit-details-marker]:hidden">
         <span className="text-neutral-900">{q}</span>
-        <ChevronDown className={`h-5 w-5 text-neutral-700 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2, ease: "easeOut" }} className="overflow-hidden px-5 pb-5 text-neutral-700">{a}</motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        <ChevronDown className="h-5 w-5 flex-shrink-0 text-neutral-700 transition-transform duration-300 group-open:rotate-180" />
+      </summary>
+      <div className="px-5 pb-5 text-neutral-700">{a}</div>
+    </details>
   );
 }
 
@@ -488,7 +475,7 @@ function Footer({ goTo }) {
           <Reveal><div className="text-sm text-neutral-600">{COMPANY.legalName}</div></Reveal>
           <Reveal delay={0.05}><div className="text-lg font-bold text-neutral-900">{COMPANY.brandName}</div></Reveal>
           <Reveal delay={0.08}><p className="mt-2 text-sm text-neutral-600">{COMPANY.brandName} es el nombre comercial de {COMPANY.legalName}.</p></Reveal>
-          <Reveal delay={0.1}><div className="mt-3 text-neutral-700">{COMPANY.city}</div></Reveal>
+          <Reveal delay={0.1}><div className="mt-3 text-neutral-700">{COMPANY.officeDisplayLocation}</div></Reveal>
         </div>
         <div>
           <Reveal><div className="mb-3 text-sm font-semibold text-neutral-900">Mapa del sitio</div></Reveal>
@@ -519,13 +506,13 @@ function HistoriaPage({ goTo }) {
     { year: "2015–2018", text: "Expansión de servicios a más provincias" },
     { year: 2019, text: "Diversificación a remodelaciones y construcción" },
     { year: 2022, text: "Implementación de procesos digitales, mejora operativa" },
-    { year: CURRENT_YEAR, text: "Consolidados como referente de mantenimiento empresarial en Ecuador" },
+    { year: CURRENT_YEAR, text: "Seguimos brindando servicios de mantenimiento empresarial en Ecuador" },
   ];
   return (
     <main>
       <section className="mx-auto max-w-5xl px-4 pt-28">
         <Reveal><h1 className="text-3xl font-bold text-neutral-900">Nuestra historia</h1></Reveal>
-        <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Cada hito refleja nuestro compromiso con la excelencia y la confianza de nuestros clientes en Ecuador.</p></Reveal>
+        <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Cada hito refleja nuestro compromiso con la calidad y la confianza de nuestros clientes en Ecuador.</p></Reveal>
       </section>
       <section className="cv-auto mx-auto max-w-5xl px-4 py-12">
         <div className="relative">
@@ -593,10 +580,10 @@ function ServiciosPage({ goTo }) {
           <div className="grid items-center gap-4 md:grid-cols-[1fr_auto]">
             <div className="text-neutral-800">
               <h3 className="text-lg font-semibold text-neutral-900">¿Requiere un servicio específico no listado?</h3>
-              <p className="mt-1 text-neutral-700">En {COMPANY.brandName} evaluamos su necesidad y presentamos una propuesta técnica integral, alineada a estándares de calidad, seguridad y cumplimiento normativo. Nuestro equipo se adapta a sus requerimientos con seriedad y eficiencia.</p>
+              <p className="mt-1 text-neutral-700">En {COMPANY.brandName} evaluamos su necesidad y presentamos una propuesta técnica alineada a estándares de calidad y seguridad. Nuestro equipo se adapta a sus requerimientos con seriedad y eficiencia.</p>
             </div>
             <div className="flex gap-3">
-              <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer"><Button className="border border-neutral-200 text-neutral-900" style={{ background: BRAND.accent }}>Solicitar cotización</Button></a>
+              <Button as="a" href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer" className="border border-neutral-200 text-neutral-900" style={{ background: BRAND.accent }}>Solicitar cotización</Button>
               <Button as="a" href={withBase(META_BY_PAGE.contacto.path)} onClick={(e) => handleNavClick(e, () => goTo("contacto"))} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Ir a contacto</Button>
             </div>
           </div>
@@ -659,32 +646,32 @@ function ContactoPage() {
           <form onSubmit={handleSubmit} ref={formRef} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm text-neutral-700">Nombre</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Tu nombre" style={{ "--brand-primary": BRAND.primary }} />
+                <label htmlFor="contact-name" className="mb-1 block text-sm text-neutral-700">Nombre</label>
+                <input id="contact-name" name="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Tu nombre" style={{ "--brand-primary": BRAND.primary }} />
               </div>
               <div>
-                <label className="mb-1 block text-sm text-neutral-700">Email</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="tunombre@correo.com" style={{ "--brand-primary": BRAND.primary }} />
+                <label htmlFor="contact-email" className="mb-1 block text-sm text-neutral-700">Email</label>
+                <input id="contact-email" name="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="tunombre@correo.com" style={{ "--brand-primary": BRAND.primary }} />
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-sm text-neutral-700">Empresa <span className="text-neutral-400">(opcional)</span></label>
-              <input value={company} onChange={(e) => setCompany(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Nombre de tu empresa" style={{ "--brand-primary": BRAND.primary }} />
+              <label htmlFor="contact-company" className="mb-1 block text-sm text-neutral-700">Empresa <span className="text-neutral-400">(opcional)</span></label>
+              <input id="contact-company" name="company" autoComplete="organization" value={company} onChange={(e) => setCompany(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Nombre de tu empresa" style={{ "--brand-primary": BRAND.primary }} />
             </div>
             <div>
-              <label className="mb-1 block text-sm text-neutral-700">Teléfono</label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Ej: +593 99 999 9999" style={{ "--brand-primary": BRAND.primary }} />
+              <label htmlFor="contact-phone" className="mb-1 block text-sm text-neutral-700">Teléfono</label>
+              <input id="contact-phone" name="phone" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Ej: +593 99 999 9999" style={{ "--brand-primary": BRAND.primary }} />
             </div>
             <div>
-              <label className="mb-1 block text-sm text-neutral-700">Mensaje</label>
-              <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={4} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Cuéntanos brevemente tu requerimiento" style={{ "--brand-primary": BRAND.primary }} />
+              <label htmlFor="contact-message" className="mb-1 block text-sm text-neutral-700">Mensaje</label>
+              <textarea id="contact-message" name="message" value={message} onChange={(e) => setMessage(e.target.value)} required rows={4} className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]" placeholder="Cuéntanos brevemente tu requerimiento" style={{ "--brand-primary": BRAND.primary }} />
             </div>
             <div className="flex items-center gap-3">
               <Button type="submit" disabled={sending} className="border border-neutral-200 text-neutral-900" style={{ background: BRAND.accent }}>{sending ? "Enviando…" : (<><Send className="h-4 w-4" /> Enviar</>)}</Button>
-              <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer"><Button className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">WhatsApp directo</Button></a>
+              <Button as="a" href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer" className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">WhatsApp directo</Button>
             </div>
-            {ok && <div className="text-sm text-emerald-600">¡Gracias! Tu mensaje se ha enviado correctamente.</div>}
-            {err && <div className="text-sm text-amber-600">{err}</div>}
+            {ok && <div role="status" aria-live="polite" className="text-sm text-emerald-600">¡Gracias! Tu mensaje se ha enviado correctamente.</div>}
+            {err && <div role="alert" className="text-sm text-amber-600">{err}</div>}
           </form>
         </Card>
         <div className="space-y-4">
@@ -752,6 +739,7 @@ export default function App({ initialPage } = {}) {
   useScrollTopOnRoute(page);
 
   useEffect(() => {
+    if (!import.meta.env.DEV) return;
     onCLS(console.log);
     onINP(console.log);
     onLCP(console.log);

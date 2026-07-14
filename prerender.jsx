@@ -62,7 +62,7 @@ export async function prerender(data) {
     { type: "meta", props: { property: "og:url", content: canonical } },
     { type: "meta", props: { property: "og:type", content: "website" } },
     { type: "meta", props: { property: "og:image", content: ICON_URL } },
-    { type: "meta", props: { property: "og:site_name", content: "Manos a la Obra – MANTARQ" } },
+    { type: "meta", props: { property: "og:site_name", content: COMPANY.brandName } },
     { type: "meta", props: { property: "og:locale", content: "es_EC" } },
     { type: "meta", props: { name: "twitter:card", content: "summary_large_image" } },
     { type: "script", props: { type: "application/ld+json", id: "ld-graph", textContent: JSON.stringify(graph) } },
