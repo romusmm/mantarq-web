@@ -23,10 +23,7 @@ import {
   SERVICES,
   FAQS,
   ICON_URL,
-  buildLocalBusinessSchema,
-  buildBreadcrumbSchema,
-  buildFAQSchema,
-  buildServicesSchema,
+  buildPageGraph,
 } from "./site-data.js";
 
 const NAV_ITEMS = [
@@ -55,8 +52,8 @@ const TIMELINE = [
 
 const CLIENT_LOGOS = [
   { name: "Grupo Ortiz (Cuenca)", url: "https://i.ibb.co/PvSHrjyC/gruporotizlogo.png" },
-  { name: "Marcimex", url: "https://i.ibb.co/WvJ8pRf0/Marcimex-Logo.png" },
-  { name: "Junta de Beneficencia de Guayaquil", url: "https://i.ibb.co/7JyR16qj/Junta-Guayaquil-Logo.png" },
+  { name: "Marcimex", url: "https://i.ibb.co/WvJ8pRf0/Marcimex-Logo.png", scale: 1.3 },
+  { name: "Junta de Beneficencia de Guayaquil", url: "https://i.ibb.co/7JyR16qj/Junta-Guayaquil-Logo.png", scale: 1.3 },
   { name: "Grupo Consenso", url: "https://i.ibb.co/whCrK4SK/grupoconsensologofinal.png" },
   { name: "Indurama", url: "https://i.ibb.co/KxmfhzBV/Indurama-Logo.png" },
   { name: "Lotería Nacional", url: "https://i.ibb.co/XrQH1J0X/Loter-a-Nacional-Logo.png" },
@@ -148,10 +145,15 @@ function SEO({ page, title, description }) {
   const appleIcon = homeHref ? new URL('apple-touch-icon.png', homeHref).href : undefined;
   const manifestUrl = homeHref ? new URL('site.webmanifest', homeHref).href : undefined;
 
-  const ldLocal = buildLocalBusinessSchema(COMPANY, canonicalHref);
-  const ldBreadcrumb = buildBreadcrumbSchema(page, canonicalHref, homeHref);
-  const ldFAQ = page === "faq" ? buildFAQSchema(FAQS) : null;
-  const ldServices = page === "servicios" ? buildServicesSchema(SERVICES, COMPANY, canonicalHref) : null;
+  const graph = (canonicalHref && homeHref) ? buildPageGraph({
+    page,
+    canonical: canonicalHref,
+    home: homeHref,
+    title,
+    company: COMPANY,
+    faqs: FAQS,
+    services: SERVICES,
+  }) : null;
 
   useEffect(() => {
     try {
@@ -182,13 +184,9 @@ function SEO({ page, title, description }) {
       if (manifestUrl) upsertHeadEl(head, 'link[rel="manifest"]', "link", { rel: "manifest", href: manifestUrl });
       upsertHeadEl(head, 'link[rel="icon"][data-fallback="true"]', "link", { rel: "icon", href: ICON_URL, "data-fallback": "true" });
 
-      upsertJsonLd(head, "ld-local", ldLocal);
-      upsertJsonLd(head, "ld-breadcrumb", ldBreadcrumb);
-      upsertJsonLd(head, "ld-faq", ldFAQ);
-      head.querySelectorAll('script[id^="ld-service-"]').forEach((el) => el.remove());
-      if (ldServices) ldServices.forEach((s, i) => upsertJsonLd(head, `ld-service-${i}`, s));
+      upsertJsonLd(head, "ld-graph", graph);
     } catch { /* noop */ }
-  }, [title, description, canonicalHref, homeHref, faviconSvg, favicon32, favicon16, appleIcon, manifestUrl, ldLocal, ldBreadcrumb, ldFAQ, ldServices]);
+  }, [title, description, canonicalHref, homeHref, faviconSvg, favicon32, favicon16, appleIcon, manifestUrl, graph]);
 
   return null;
 }
@@ -337,8 +335,14 @@ function Hero({ goTo }) {
         <Reveal delay={0.05}>
           <p className="mt-6 max-w-3xl text-lg text-neutral-700">Somos Manos a la Obra, especializados en mantenimiento integral para empresas en todo Ecuador. Un solo proveedor para todos tus desafíos de mantenimiento.</p>
         </Reveal>
+        <Reveal delay={0.07}>
+          <p className="mt-4 max-w-3xl text-neutral-700">
+            Manos a la Obra es el nombre comercial de {COMPANY.legalName}, activa en Cuenca desde 2014 y con cobertura a nivel nacional en Ecuador.{" "}
+            <a href={withBase(META_BY_PAGE.historia.path)} onClick={(e) => handleNavClick(e, () => goTo("historia"))} className="cursor-pointer underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900">Conoce nuestra historia</a>.
+          </p>
+        </Reveal>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button onClick={() => goTo("servicios")} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Conócenos</Button>
+          <Button as="a" href={withBase(META_BY_PAGE.servicios.path)} onClick={(e) => handleNavClick(e, () => goTo("servicios"))} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Conócenos</Button>
           <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer"><Button className="border border-neutral-200 text-neutral-900 hover:translate-y-[-1px]" style={{ background: BRAND.accent }}>Solicita tu servicio</Button></a>
         </div>
       </div>
@@ -347,7 +351,29 @@ function Hero({ goTo }) {
 }
 
 function LogosMarquee() {
-  const duplicated = [...CLIENT_LOGOS, ...CLIENT_LOGOS, ...CLIENT_LOGOS];
+  const duplicated = [...CLIENT_LOGOS, ...CLIENT_LOGOS];
+  const trackRef = useRef(null);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    // El desplazamiento del loop se mide en píxeles reales (no en % del ancho
+    // total) porque `gap` de flexbox no agrega espacio tras el último elemento:
+    // usar `translateX(-50%)` deja siempre un desfase de medio `gap` en el
+    // punto de reinicio, visible como un salto en cada vuelta del carrusel.
+    const measure = () => {
+      const items = track.children;
+      if (items.length < CLIENT_LOGOS.length + 1) return;
+      const first = items[0].getBoundingClientRect().left;
+      const secondSetStart = items[CLIENT_LOGOS.length].getBoundingClientRect().left;
+      track.style.setProperty("--marquee-shift", `${secondSetStart - first}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(track);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <section className="cv-auto border-y border-neutral-200 py-8">
       <div className="mx-auto max-w-7xl px-4">
@@ -356,11 +382,11 @@ function LogosMarquee() {
         </Reveal>
 
         <div className="relative overflow-hidden">
-          <div className="animate-marquee flex items-center gap-6 whitespace-nowrap">
+          <div ref={trackRef} className="animate-marquee flex items-center gap-6 whitespace-nowrap">
             {duplicated.map((item, i) => (
               <div key={i} className="logo-item-desktop group flex h-24 min-w-[320px] items-center justify-center rounded-xl border border-neutral-200 bg-white px-10">
                 {item.url ? (
-                  <img src={item.url} alt={item.name} className="logo-img-desktop h-16 w-auto opacity-90 transition-all duration-200 group-hover:opacity-100" loading="lazy" decoding="async" width="320" height="64" />
+                  <img src={item.url} alt={`Logo de ${item.name}`} className="logo-img-desktop h-16 w-auto opacity-90 transition-all duration-200 group-hover:opacity-100" style={item.scale ? { transform: `translateZ(0) scale(${item.scale})` } : undefined} loading="lazy" decoding="async" width="320" height="64" />
                 ) : (
                   <span className="text-sm text-neutral-700">{item.name}</span>
                 )}
@@ -371,12 +397,12 @@ function LogosMarquee() {
       </div>
 
       <style>{`
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-33.333%); } }
-        .animate-marquee { animation: marquee var(--marquee-duration,30s) linear infinite; will-change: transform; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(calc(-1 * var(--marquee-shift, 50%))); } }
+        .animate-marquee { animation: marquee var(--marquee-duration,36s) linear infinite; will-change: transform; }
         .logo-img-desktop { filter: grayscale(1) contrast(1) brightness(0.6) drop-shadow(0 0 1px rgba(0,0,0,0.18)); transform: translateZ(0); transition: filter .2s ease, opacity .2s ease; }
         .logo-item-desktop:hover .logo-img-desktop { filter: none; }
         @media (max-width: 640px) {
-          .animate-marquee { --marquee-duration: 18s; }
+          .animate-marquee { --marquee-duration: 30s; }
           .logo-img-desktop { filter: none; }
         }
         @media (prefers-reduced-motion: reduce) { .animate-marquee { animation-duration: 56s; } }
@@ -438,12 +464,17 @@ function FAQSection({ full = false, goTo }) {
             <AccordionItem key={i} q={f.q} a={f.a} />
           ))}
         </div>
-        {!full && (
-          <div className="mt-6 text-center">
-            <span className="text-neutral-700">¿Tienes otra pregunta? </span>
-            <Button onClick={() => (goTo ? goTo("contacto") : (window.location.href = `mailto:${COMPANY.email}`))} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Escríbenos</Button>
-          </div>
-        )}
+        <div className="mt-6 text-center">
+          <span className="text-neutral-700">¿Tienes otra pregunta? </span>
+          <Button
+            as="a"
+            href={goTo ? withBase(META_BY_PAGE.contacto.path) : `mailto:${COMPANY.email}`}
+            onClick={(e) => { if (goTo) handleNavClick(e, () => goTo("contacto")); }}
+            className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"
+          >
+            Escríbenos
+          </Button>
+        </div>
       </div>
     </section>
   );
@@ -456,6 +487,7 @@ function Footer({ goTo }) {
         <div>
           <Reveal><div className="text-sm text-neutral-600">{COMPANY.legalName}</div></Reveal>
           <Reveal delay={0.05}><div className="text-lg font-bold text-neutral-900">{COMPANY.brandName}</div></Reveal>
+          <Reveal delay={0.08}><p className="mt-2 text-sm text-neutral-600">{COMPANY.brandName} es el nombre comercial de {COMPANY.legalName}.</p></Reveal>
           <Reveal delay={0.1}><div className="mt-3 text-neutral-700">{COMPANY.city}</div></Reveal>
         </div>
         <div>
@@ -480,7 +512,7 @@ function Footer({ goTo }) {
   );
 }
 
-function HistoriaPage() {
+function HistoriaPage({ goTo }) {
   const CURRENT_YEAR = new Date().getFullYear();
   const STEPS = [
     { year: 2014, text: "Inicio de Actividades en Cuenca, Ecuador" },
@@ -520,6 +552,12 @@ function HistoriaPage() {
             Cada cliente satisfecho es nuestra mejor recomendación
           </div>
         </Reveal>
+        <Reveal delay={0.05}>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button as="a" href={withBase(META_BY_PAGE.servicios.path)} onClick={(e) => handleNavClick(e, () => goTo("servicios"))} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Conoce nuestros servicios</Button>
+            <Button as="a" href={withBase(META_BY_PAGE.contacto.path)} onClick={(e) => handleNavClick(e, () => goTo("contacto"))} className="border border-neutral-200 text-neutral-900" style={{ background: BRAND.accent }}>Contáctanos</Button>
+          </div>
+        </Reveal>
       </section>
     </main>
   );
@@ -531,11 +569,16 @@ function ServiciosPage({ goTo }) {
       <section className="mx-auto max-w-6xl px-4">
         <Reveal><h1 className="text-3xl font-bold text-neutral-900">Servicios</h1></Reveal>
         <Reveal delay={0.05}><p className="mt-3 max-w-3xl text-neutral-700">Soluciones integrales para empresas, comercios y residencias, con estándares de calidad y seguridad.</p></Reveal>
+        <Reveal delay={0.08}>
+          <p className="mt-2 max-w-3xl text-neutral-700">
+            <a href={withBase(META_BY_PAGE.historia.path)} onClick={(e) => handleNavClick(e, () => goTo("historia"))} className="cursor-pointer underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900">Conoce nuestra trayectoria desde 2014</a>.
+          </p>
+        </Reveal>
       </section>
       <section className="cv-auto mx-auto max-w-6xl px-4 py-10">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((s, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.35 }} className="group h-full rounded-2xl border border-neutral-200 bg-white p-6 transition-all hover:translate-y-[-2px] hover:shadow-xl">
+            <motion.div key={i} id={s.slug} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.35 }} className="group h-full scroll-mt-28 rounded-2xl border border-neutral-200 bg-white p-6 transition-all hover:translate-y-[-2px] hover:shadow-xl">
               <div className="mb-4 flex items-center gap-3">
                 <div className="grid h-12 w-12 place-items-center rounded-xl" style={{ background: BRAND.primary }}>
                   <s.icon className="h-6 w-6 text-white" />
@@ -554,7 +597,7 @@ function ServiciosPage({ goTo }) {
             </div>
             <div className="flex gap-3">
               <a href={`https://wa.me/${COMPANY.phoneHref}`} target="_blank" rel="noreferrer"><Button className="border border-neutral-200 text-neutral-900" style={{ background: BRAND.accent }}>Solicitar cotización</Button></a>
-              <Button onClick={() => goTo("contacto")} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Ir a contacto</Button>
+              <Button as="a" href={withBase(META_BY_PAGE.contacto.path)} onClick={(e) => handleNavClick(e, () => goTo("contacto"))} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Ir a contacto</Button>
             </div>
           </div>
         </Card>
@@ -690,7 +733,7 @@ function ServiciosCTA({ goTo }) {
           <Reveal delay={0.05}><p className="mt-2 text-neutral-700">Descubre cómo podemos ayudarte con soluciones integrales y confiables.</p></Reveal>
           <Reveal delay={0.1}>
             <div className="mt-6">
-              <Button onClick={() => goTo("servicios")} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Ver servicios</Button>
+              <Button as="a" href={withBase(META_BY_PAGE.servicios.path)} onClick={(e) => handleNavClick(e, () => goTo("servicios"))} className="border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50">Ver servicios</Button>
             </div>
           </Reveal>
         </div>
@@ -739,7 +782,7 @@ export default function App({ initialPage } = {}) {
       <AnimatePresence mode="wait">
         <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
           {page === "inicio" && <InicioPage goTo={goTo} />}
-          {page === "historia" && <HistoriaPage />}
+          {page === "historia" && <HistoriaPage goTo={goTo} />}
           {page === "servicios" && <ServiciosPage goTo={goTo} />}
           {page === "faq" && <FAQPage goTo={goTo} />}
           {page === "contacto" && <ContactoPage />}

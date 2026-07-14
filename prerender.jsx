@@ -10,10 +10,7 @@ import {
   FAQS,
   SERVICES,
   pageFromPathname,
-  buildLocalBusinessSchema,
-  buildBreadcrumbSchema,
-  buildFAQSchema,
-  buildServicesSchema,
+  buildPageGraph,
 } from "./src/site-data.js";
 
 // Resuelve origin/base igual que scripts/generate-sitemap.mjs, para que las
@@ -45,10 +42,15 @@ export async function prerender(data) {
   const canonical = joinUrl(origin, base, meta.path);
   const home = joinUrl(origin, base, "/");
 
-  const ldLocal = buildLocalBusinessSchema(COMPANY, canonical);
-  const ldBreadcrumb = buildBreadcrumbSchema(initialPage, canonical, home);
-  const ldFAQ = initialPage === "faq" ? buildFAQSchema(FAQS) : null;
-  const ldServices = initialPage === "servicios" ? buildServicesSchema(SERVICES, COMPANY, canonical) : null;
+  const graph = buildPageGraph({
+    page: initialPage,
+    canonical,
+    home,
+    title: meta.title,
+    company: COMPANY,
+    faqs: FAQS,
+    services: SERVICES,
+  });
 
   const elements = new Set([
     { type: "meta", props: { name: "description", content: meta.desc } },
@@ -63,20 +65,8 @@ export async function prerender(data) {
     { type: "meta", props: { property: "og:site_name", content: "Manos a la Obra – MANTARQ" } },
     { type: "meta", props: { property: "og:locale", content: "es_EC" } },
     { type: "meta", props: { name: "twitter:card", content: "summary_large_image" } },
-    { type: "script", props: { type: "application/ld+json", id: "ld-local", textContent: JSON.stringify(ldLocal) } },
+    { type: "script", props: { type: "application/ld+json", id: "ld-graph", textContent: JSON.stringify(graph) } },
   ]);
-
-  if (ldBreadcrumb) {
-    elements.add({ type: "script", props: { type: "application/ld+json", id: "ld-breadcrumb", textContent: JSON.stringify(ldBreadcrumb) } });
-  }
-  if (ldFAQ) {
-    elements.add({ type: "script", props: { type: "application/ld+json", id: "ld-faq", textContent: JSON.stringify(ldFAQ) } });
-  }
-  if (ldServices) {
-    ldServices.forEach((s, i) => {
-      elements.add({ type: "script", props: { type: "application/ld+json", id: `ld-service-${i}`, textContent: JSON.stringify(s) } });
-    });
-  }
 
   return {
     html,

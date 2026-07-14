@@ -3,6 +3,8 @@
 Fecha de auditoría: 2026-07-13
 Repositorio: `mantarq-web`
 
+> **Nota (2026-07-14):** este documento cubre la Fase 1 (prerenderizado, rutas, metadatos, routing). La Fase 2 (arquitectura de contenidos, enlazado interno, consolidación de marca, datos estructurados `@graph`) está documentada por separado en `SEO_PHASE_2_PLAN.md` (plan aprobado) y `SEO_PHASE_2_IMPLEMENTATION.md` (registro de lo implementado). Las conclusiones de Fase 1 siguen vigentes salvo donde la Fase 2 las actualiza explícitamente (ver esos documentos).
+
 ## 1. Resumen ejecutivo
 
 El sitio es una **SPA (Single Page Application) en React 18 + Vite**, sin React Router ni ningún sistema de rutas. Toda la navegación (Inicio, Historia, Servicios, FAQ, Contacto) es un `useState` interno en `src/App.jsx` (`const [page, setPage] = useState("inicio")`); los enlaces del navbar son `<button onClick>` que solo cambian ese estado, nunca la URL del navegador.
